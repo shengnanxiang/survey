@@ -144,6 +144,19 @@ tr:hover td { background:rgba(255,255,255,0.02); }
 // ---- State ----
 let GITHUB_TOKEN = ''; // Public repo — no token needed for read access
 let allResponses = [];
+
+// Restore imported data from localStorage
+try {
+    const saved = JSON.parse(localStorage.getItem('aiken_admin_imported') || '[]');
+    allResponses = saved;
+} catch(e) {}
+
+function saveImportedData() {
+    try {
+        localStorage.setItem('aiken_admin_imported', JSON.stringify(allResponses));
+    } catch(e) {}
+}
+
 const REPO = 'shengnanxiang/survey';
 
 // ---- Style config (must match survey.html) ----
@@ -203,6 +216,7 @@ importInput.addEventListener('change', async () => {
 
     importInput.value = '';
     if (imported > 0) {
+        saveImportedData();
         renderDashboard();
         document.getElementById('respCount').textContent = allResponses.length + ' 份回答（含 ' + imported + ' 份导入）';
         document.getElementById('connStatus').className = 'status-dot on';
@@ -221,7 +235,7 @@ async function loadData() {
 
     try {
         const issues = await fetchAllIssues();
-        allResponses = issues.map(issue => {
+        const ghResponses = issues.map(issue => {
             try {
                 const body = issue.body.replace(/```json\n?|```/g, '').trim();
                 const data = JSON.parse(body);
@@ -230,6 +244,17 @@ async function loadData() {
                 return null;
             }
         }).filter(Boolean);
+
+        // Merge with locally imported data (GitHub data takes priority)
+        const localData = JSON.parse(localStorage.getItem('aiken_admin_imported') || '[]');
+        const merged = [...ghResponses];
+        localData.forEach(local => {
+            if (!merged.some(r => r.timestamp === local.timestamp)) {
+                merged.push(local);
+            }
+        });
+        allResponses = merged;
+        saveImportedData();
 
         status.className = 'status-dot on';
         count.textContent = allResponses.length + ' 份回答';
