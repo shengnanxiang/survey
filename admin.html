@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AiKen 调研数据看板</title>
+<title>风格偏好调研数据看板</title>
 <style>
 :root {
     --bg: #0e1220;
@@ -119,7 +119,7 @@ tr:hover td { background:rgba(255,255,255,0.02); }
 <body>
 
 <div class="toolbar">
-    <h1>AiKen 风格偏��调研 · 数据看板</h1>
+    <h1>风格偏好调研 · 数据看板</h1>
     <div class="toolbar-right" id="toolbarRight">
         <span id="connStatus" class="status-dot" title="未连接"></span>
         <span id="respCount" style="font-size:12px;color:var(--text-muted)">—</span>
@@ -140,7 +140,7 @@ tr:hover td { background:rgba(255,255,255,0.02); }
 
 <script>
 // ---- State ----
-let GITHUB_TOKEN = atob('Z2l0aHViX3BhdF8xMUFRS0FXRFEwVEhXQ1ZIODdDZE9FX0wyUFRyZFBPcUFpUGJXbDhmNU56VFdmSnR2dnlQSHZHdWJ1c3hickdKb1NEVE80V1NFOWpBYVVmcm0=');
+let GITHUB_TOKEN = ''; // Public repo — no token needed for read access
 let allResponses = [];
 const REPO = 'shengnanxiang/survey';
 
@@ -170,7 +170,6 @@ loadData();
 function connectWithToken() { /* no-op: token embedded */ }
 
 async function loadData() {
-    if (!GITHUB_TOKEN) return;
     const status = document.getElementById('connStatus');
     const count = document.getElementById('respCount');
     status.className = 'status-dot';
@@ -202,12 +201,9 @@ async function loadData() {
 
 async function fetchAllIssues(page = 1, acc = []) {
     const url = 'https://api.github.com/repos/' + REPO + '/issues?labels=survey-response&state=all&per_page=100&page=' + page;
-    const resp = await fetch(url, {
-        headers: {
-            'Authorization': 'token ' + GITHUB_TOKEN,
-            'Accept': 'application/vnd.github+json',
-        }
-    });
+    const headers = { 'Accept': 'application/vnd.github+json' };
+    if (GITHUB_TOKEN) headers['Authorization'] = 'token ' + GITHUB_TOKEN;
+    const resp = await fetch(url, { headers });
     if (!resp.ok) throw new Error('GitHub API error: ' + resp.status);
     const issues = await resp.json();
     const all = acc.concat(issues);
