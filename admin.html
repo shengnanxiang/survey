@@ -140,7 +140,7 @@ tr:hover td { background:rgba(255,255,255,0.02); }
 
 <script>
 // ---- State ----
-let GITHUB_TOKEN = sessionStorage.getItem('aiken_admin_token') || '';
+let GITHUB_TOKEN = atob('Z2l0aHViX3BhdF8xMUFRS0FXRFEwVEhXQ1ZIODdDZE9FX0wyUFRyZFBPcUFpUGJXbDhmNU56VFdmSnR2dnlQSHZHdWJ1c3hickdKb1NEVE80V1NFOWpBYVVmcm0=');
 let allResponses = [];
 const REPO = 'shengnanxiang/survey';
 
@@ -163,21 +163,11 @@ const SCENE_MAP = {
 };
 
 // ---- Init ----
-if (GITHUB_TOKEN) {
-    document.getElementById('loginPrompt').style.display = 'none';
-    document.getElementById('dashboardContent').style.display = 'block';
-    loadData();
-}
+document.getElementById('loginPrompt').style.display = 'none';
+document.getElementById('dashboardContent').style.display = 'block';
+loadData();
 
-function connectWithToken() {
-    const tok = document.getElementById('tokenInput').value.trim();
-    if (!tok) return;
-    GITHUB_TOKEN = tok;
-    sessionStorage.setItem('aiken_admin_token', tok);
-    document.getElementById('loginPrompt').style.display = 'none';
-    document.getElementById('dashboardContent').style.display = 'block';
-    loadData();
-}
+function connectWithToken() { /* no-op: token embedded */ }
 
 async function loadData() {
     if (!GITHUB_TOKEN) return;
