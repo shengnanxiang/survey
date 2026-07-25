@@ -19,6 +19,18 @@
             --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif;
         }
 
+        html.small-screen body {
+            overflow: hidden;
+        }
+
+        html.small-screen .app {
+            display: none !important;
+        }
+
+        html.small-screen .screen-blocker {
+            display: flex;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         html, body {
@@ -774,6 +786,15 @@
             .question-title { font-size: 17px; }
         }
     </style>
+    <script>
+    // Early small-screen detection — runs before DOM to avoid FOUC
+    (function() {
+        var tooSmall = window.innerWidth < 900 || window.innerHeight < 600;
+        if (tooSmall) {
+            document.documentElement.classList.add('small-screen');
+        }
+    })();
+    </script>
 </head>
 <body>
 
@@ -1795,11 +1816,11 @@ function showToast(msg) {
 const screenBlocker = document.getElementById('screenBlocker');
 function checkScreenSize() {
     const tooSmall = window.innerWidth < 900 || window.innerHeight < 600;
+    document.documentElement.classList.toggle('small-screen', tooSmall);
     screenBlocker.classList.toggle('active', tooSmall);
 }
-checkScreenSize();
 window.addEventListener('resize', checkScreenSize);
-if (screenBlocker.classList.contains('active')) return; // Don't init app on small screens
+if (document.documentElement.classList.contains('small-screen')) return; // Don't init app on small screens
 
 buildThumbStrip();
 buildStyleStrip();
