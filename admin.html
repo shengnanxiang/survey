@@ -392,15 +392,14 @@ function renderPreferenceSection() {
 
 function renderOpenFeedback() {
     const feedbacks = allResponses
-        .map(r => ({ own: r.answers && r.answers['own_photo_diff'], open: r.answers && r.answers['open_feedback'] }))
-        .filter(f => (f.own && f.own.trim()) || (f.open && f.open.trim()));
+        .map(r => ({ open: r.answers && r.answers['open_feedback'] }))
+        .filter(f => f.open && f.open.trim());
 
     if (feedbacks.length === 0) return '';
 
     let html = '<div class="section"><div class="section-title">开放反馈（' + feedbacks.length + ' 条）</div>';
     feedbacks.forEach((f, i) => {
-        if (f.own && f.own.trim()) html += '<div style="background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:10px"><div style="font-size:11px;color:var(--accent);margin-bottom:6px;">用自己的照片 vs 看样片的感受</div><div style="font-size:13px;color:var(--text-soft);line-height:1.6">' + escapeHtml(f.own) + '</div></div>';
-        if (f.open && f.open.trim()) html += '<div style="background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:10px"><div style="font-size:11px;color:var(--accent);margin-bottom:6px;">其他建议</div><div style="font-size:13px;color:var(--text-soft);line-height:1.6">' + escapeHtml(f.open) + '</div></div>';
+        html += '<div style="background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:10px"><div style="font-size:11px;color:var(--accent);margin-bottom:6px;">其他建议</div><div style="font-size:13px;color:var(--text-soft);line-height:1.6">' + escapeHtml(f.open) + '</div></div>';
     });
     html += '</div>';
     return html;

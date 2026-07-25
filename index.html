@@ -229,7 +229,7 @@
 
         /* ---- Right: Survey Panel ---- */
         .right-panel {
-            width: 420px;
+            width: 460px;
             flex-shrink: 0;
             display: flex;
             flex-direction: column;
@@ -860,17 +860,9 @@ const QUESTIONS = [
         required: true,
         options: [
             { value: 'yes', label: '愿意，如果是我喜欢的风格' },
-            { value: 'cheap', label: '看价格，几块钱可以' },
+            { value: 'cheap', label: '不确定，看价格' },
             { value: 'no', label: '不愿意，应该免费' },
-            { value: 'unsure', label: '不确定' },
         ]
-    },
-    {
-        id: 'own_photo_diff',
-        type: 'text',
-        title: '用你自己的照片套用风格后，和平时看别人的滤镜样片相比，感受有什么不同？',
-        subtitle: '选填，但你的感受对我们很重要。',
-        required: false,
     },
     {
         id: 'open_feedback',
@@ -944,7 +936,7 @@ const ALL_QUESTIONS = [
         required: false,
     },
     ...PER_STYLE_QUESTIONS,
-    ...QUESTIONS.filter(q => q.id !== 'favorite_single' && q.id !== 'favorite_five' && q.id !== 'never_use'),
+    ...QUESTIONS.filter(q => q.id !== 'favorite_single' && q.id !== 'favorite_five' && q.id !== 'never_use' && q.id !== 'own_photo_diff' && q.id !== 'open_feedback'),
     // Put these after per-style so options are familiar
     {
         id: 'favorite_single',
@@ -973,6 +965,14 @@ const ALL_QUESTIONS = [
             ...STYLES.filter(s => s.id !== 'original').map(s => ({ value: s.id, label: s.name })),
             { value: 'none', label: '没有，都能接受' },
         ],
+    },
+    // Open feedback last
+    {
+        id: 'open_feedback',
+        type: 'text',
+        title: '还有什么想说的？',
+        subtitle: '任何建议、吐槽或感受都可以。选填。',
+        required: false,
     },
 ];
 </script>
