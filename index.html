@@ -101,6 +101,64 @@
             box-shadow: 0 0 16px var(--accent-glow);
         }
 
+        /* Thumbnail strip */
+        .thumb-strip {
+            height: 64px;
+            flex-shrink: 0;
+            background: var(--panel-bg);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 16px;
+            gap: 8px;
+        }
+
+        .thumb-strip:empty { display: none; }
+
+        .thumb-slot {
+            width: 44px;
+            height: 44px;
+            border-radius: 6px;
+            border: 1px dashed rgba(255, 255, 255, 0.2);
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.15s;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .thumb-slot:hover {
+            border-color: var(--accent);
+            background: rgba(255, 159, 67, 0.06);
+        }
+
+        .thumb-slot.active {
+            border-color: var(--accent);
+            border-style: solid;
+            box-shadow: 0 0 8px var(--accent-glow);
+        }
+
+        .thumb-slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .thumb-slot .plus {
+            font-size: 20px;
+            color: var(--text-dim);
+            line-height: 1;
+        }
+
+        .thumb-slot:hover .plus {
+            color: var(--accent);
+        }
+
         .style-strip {
             height: 80px;
             flex-shrink: 0;
@@ -362,11 +420,12 @@
         /* 1-5 rating */
         .rating-row {
             display: flex;
-            gap: 12px;
+            gap: 0;
+            justify-content: space-between;
         }
 
         .rating-btn {
-            width: 52px;
+            flex: 1;
             height: 52px;
             border-radius: 10px;
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -377,7 +436,11 @@
             font-weight: 600;
             transition: all 0.15s;
             font-family: var(--font);
+            margin: 0 4px;
         }
+
+        .rating-btn:first-child { margin-left: 0; }
+        .rating-btn:last-child { margin-right: 0; }
 
         .rating-btn:hover {
             border-color: rgba(255, 255, 255, 0.2);
@@ -657,6 +720,8 @@
 <div class="app">
     <!-- Left: Image Preview + Style Strip -->
     <div class="left-panel">
+        <!-- Thumbnail strip above preview -->
+        <div class="thumb-strip" id="thumbStrip"></div>
         <div class="preview-area" id="previewArea">
             <canvas id="previewCanvas"></canvas>
             <div class="upload-placeholder" id="uploadPlaceholder">
@@ -671,6 +736,7 @@
         </div>
         <div class="style-strip" id="styleStrip"></div>
         <input type="file" id="imageInput" accept="image/*" style="display:none">
+        <input type="file" id="thumbInput" accept="image/*" style="display:none">
     </div>
 
     <!-- Right: Survey -->
@@ -918,20 +984,24 @@ const ALL_QUESTIONS = [
 -->
 <script>
 // ---- State ----
-let sourceImage = null;
+let sourceImages = [];      // Array of { img: Image, dataUrl: string }
+let activeImageIndex = 0;   // Currently displayed image index
 let currentStyleId = null;
 let currentQuestionIndex = 0;
-let answers = {};        // { questionId: value }
-let submittedQuestions = new Set(); // questions that have been answered and locked
+let answers = {};           // { questionId: value }
+let submittedQuestions = new Set();
 let hasImage = false;
+let pendingThumbSlot = null; // Slot index waiting for file selection
 
 // ---- DOM refs ----
 const previewArea = document.getElementById('previewArea');
 const previewCanvas = document.getElementById('previewCanvas');
 const ctx = previewCanvas.getContext('2d', { willReadFrequently: true });
 const uploadPlaceholder = document.getElementById('uploadPlaceholder');
+const thumbStrip = document.getElementById('thumbStrip');
 const styleStrip = document.getElementById('styleStrip');
 const imageInput = document.getElementById('imageInput');
+const thumbInput = document.getElementById('thumbInput');
 const surveyBody = document.getElementById('surveyBody');
 const surveyFooter = document.getElementById('surveyFooter');
 const stepInfo = document.getElementById('stepInfo');
@@ -998,12 +1068,13 @@ function applyLUT(srcPixels, w, h, lut) {
 }
 
 function renderPreview() {
-    if (!sourceImage) return;
-    const w = sourceImage.naturalWidth || sourceImage.width;
-    const h = sourceImage.naturalHeight || sourceImage.height;
+    if (!hasImage || !sourceImages[activeImageIndex]) return;
+    const img = sourceImages[activeImageIndex].img;
+    const w = img.naturalWidth || img.width;
+    const h = img.naturalHeight || img.height;
     previewCanvas.width = w;
     previewCanvas.height = h;
-    ctx.drawImage(sourceImage, 0, 0, w, h);
+    ctx.drawImage(img, 0, 0, w, h);
     const style = STYLES.find(s => s.id === currentStyleId);
     if (style && style.lutPath) {
         const lut = lutCache[style.lutPath];
@@ -1074,9 +1145,53 @@ function setEnabledStyles(allowedIds) {
     });
 }
 
-// ---- Image Upload ----
+// ---- Image Upload & Thumbnail Strip ----
+const MAX_IMAGES = 5;
+
+function buildThumbStrip() {
+    thumbStrip.innerHTML = '';
+    for (let i = 0; i < MAX_IMAGES; i++) {
+        const slot = document.createElement('div');
+        slot.className = 'thumb-slot';
+        slot.dataset.index = i;
+        if (i === activeImageIndex && sourceImages[i]) slot.classList.add('active');
+
+        if (sourceImages[i]) {
+            slot.innerHTML = '<img src="' + sourceImages[i].dataUrl + '" alt="Image ' + (i+1) + '" />';
+        } else {
+            slot.innerHTML = '<span class="plus">+</span>';
+        }
+
+        slot.addEventListener('click', () => {
+            if (sourceImages[i]) {
+                // Switch to this image
+                activeImageIndex = i;
+                buildThumbStrip();
+                renderPreview();
+            } else {
+                // Upload to this slot
+                pendingThumbSlot = i;
+                thumbInput.click();
+            }
+        });
+
+        thumbStrip.appendChild(slot);
+    }
+}
+
+thumbInput.addEventListener('change', e => {
+    if (e.target.files.length > 0 && pendingThumbSlot !== null) {
+        loadImageToSlot(e.target.files[0], pendingThumbSlot);
+        pendingThumbSlot = null;
+    }
+    thumbInput.value = '';
+});
+
 previewArea.addEventListener('click', (e) => {
-    if (!hasImage) imageInput.click();
+    if (!hasImage) {
+        pendingThumbSlot = 0;
+        imageInput.click();
+    }
 });
 
 // Upload button inside placeholder
@@ -1084,6 +1199,7 @@ const uploadBtnHint = document.getElementById('uploadBtnHint');
 if (uploadBtnHint) {
     uploadBtnHint.addEventListener('click', (e) => {
         e.stopPropagation();
+        pendingThumbSlot = 0;
         imageInput.click();
     });
 }
@@ -1091,14 +1207,28 @@ if (uploadBtnHint) {
 previewArea.addEventListener('dragover', e => { e.preventDefault(); });
 previewArea.addEventListener('drop', e => {
     e.preventDefault();
-    if (e.dataTransfer.files.length > 0) loadImageFile(e.dataTransfer.files[0]);
+    if (e.dataTransfer.files.length > 0) {
+        const slot = findEmptySlot();
+        if (slot !== null) loadImageToSlot(e.dataTransfer.files[0], slot);
+    }
 });
 
 imageInput.addEventListener('change', e => {
-    if (e.target.files.length > 0) loadImageFile(e.target.files[0]);
+    if (e.target.files.length > 0 && pendingThumbSlot !== null) {
+        loadImageToSlot(e.target.files[0], pendingThumbSlot);
+        pendingThumbSlot = null;
+    }
+    imageInput.value = '';
 });
 
-function loadImageFile(file) {
+function findEmptySlot() {
+    for (let i = 0; i < MAX_IMAGES; i++) {
+        if (!sourceImages[i]) return i;
+    }
+    return sourceImages.length < MAX_IMAGES ? sourceImages.length : null;
+}
+
+function loadImageToSlot(file, slotIndex) {
     if (!file || !file.type.startsWith('image/')) {
         showToast('请选择有效的图片文件');
         return;
@@ -1107,16 +1237,24 @@ function loadImageFile(file) {
     reader.onload = function(e) {
         const img = new Image();
         img.onload = function() {
-            sourceImage = img;
+            sourceImages[slotIndex] = { img: img, dataUrl: e.target.result };
+            activeImageIndex = slotIndex;
             hasImage = true;
             uploadPlaceholder.style.display = 'none';
             previewCanvas.style.display = 'block';
+            buildThumbStrip();
             selectStyle('original');
             updateQuestionUI();
         };
         img.src = e.target.result;
     };
     reader.readAsDataURL(file);
+}
+
+// Deprecated — kept for potential drag-drop compatibility
+function loadImageFile(file) {
+    const slot = findEmptySlot();
+    if (slot !== null) loadImageToSlot(file, slot);
 }
 
 // Helper: check if a question is an overall comparison (all styles should be available)
@@ -1352,17 +1490,19 @@ function updateQuestionUI() {
     if (q.type === 'welcome') {
         // Welcome: only original available
         setEnabledStyles(['original']);
+        selectStyle('original');
         renderWelcome();
     } else {
         // Determine allowed styles based on question type
         if (q.styleId) {
             // Per-style question: only original + this style
             setEnabledStyles(['original', q.styleId]);
+            selectStyle(q.styleId);
         } else if (isOverallQuestion(q)) {
             // Overall comparison questions: all styles available
             setEnabledStyles(null);
         } else {
-            // Other non-style questions (direction, monthly, pay, text): all available
+            // Other non-style questions: all available
             setEnabledStyles(null);
         }
         renderQuestion();
@@ -1411,21 +1551,11 @@ function goNext() {
         return;
     }
 
-    // For per-style questions, auto-switch style
-    const nextQ = ALL_QUESTIONS[currentQuestionIndex + 1];
-    if (nextQ && nextQ.styleId && nextQ.styleId !== currentStyleId) {
-        selectStyle(nextQ.styleId);
-    }
-
     goToQuestion(currentQuestionIndex + 1);
 }
 
 function goPrev() {
     if (currentQuestionIndex > 0) {
-        const prevQ = ALL_QUESTIONS[currentQuestionIndex - 1];
-        if (prevQ && prevQ.styleId && prevQ.styleId !== currentStyleId) {
-            selectStyle(prevQ.styleId);
-        }
         goToQuestion(currentQuestionIndex - 1);
     }
 }
@@ -1474,6 +1604,7 @@ function showToast(msg) {
 }
 
 // ---- Init ----
+buildThumbStrip();
 buildStyleStrip();
 
 // Start with welcome
