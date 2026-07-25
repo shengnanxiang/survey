@@ -1752,7 +1752,7 @@ async function retrySubmit() {
 }
 
 async function submitToGitHub(result) {
-    const GITHUB_TOKEN = ['ghp', 'zFsbsSx8cacGp89TQHwgsP9NjYmXVb3nD2Jl'].join('_');
+    const GITHUB_TOKEN = ''; // Public repo — for submission, set your PAT here or use a backend proxy
     const REPO = 'shengnanxiang/survey';
     const title = '[survey] ' + result.timestamp.replace('T', ' ').substring(0, 19);
     const body = '```json\n' + JSON.stringify(result, null, 2) + '\n```';

@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AiKen 用户调研 · 数据看板</title>
+<style>
+:root {
+    --bg: #0e1220;
+    --panel: #171c2e;
+    --border: #262c44;
+    --text: #e8ecf5;
+    --text-soft: #b3bacd;
+    --text-muted: #7d859e;
+    --accent: #7c9bff;
+    --accent-2: #a48bff;
+    --success: #3ecf8e;
+    --warn: #f7b955;
+    --radius: 12px;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { height:100%; background:var(--bg); color:var(--text); font-family:var(--font); }
+body { display:flex; flex-direction:column; }
+
+.toolbar {
+    padding: 16px 28px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+}
+.toolbar h1 { font-size: 20px; font-weight: 700; }
+.toolbar-right { display:flex; align-items:center; gap:12px; }
+.btn {
+    padding: 8px 16px; border-radius: 6px; border:none; font-size:13px; font-weight:600;
+    cursor:pointer; font-family:var(--font); white-space:nowrap;
+}
+.btn-primary { background:var(--accent); color:#fff; }
+.btn-primary:hover { background:var(--accent-2); }
+.btn-sm { padding:5px 10px; font-size:11px; border-radius:4px; background:rgba(255,255,255,0.06); border:1px solid var(--border); color:var(--text-soft); cursor:pointer; }
+.btn-sm:hover { color:var(--text); border-color:var(--accent); }
+.status-dot { width:8px; height:8px; border-radius:50%; background:var(--text-muted); flex-shrink:0; }
+.status-dot.on { background:var(--success); box-shadow:0 0 6px rgba(62,207,142,0.4); }
+
+.main {
+    flex:1; overflow-y:auto; padding:24px 28px;
+    scrollbar-width:thin; scrollbar-color:rgba(255,255,255,0.08) transparent;
+}
+.main::-webkit-scrollbar { width:5px; }
+.main::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.08); border-radius:3px; }
+
+.summary-row { display:flex; gap:16px; margin-bottom:24px; flex-wrap:wrap; }
+.summary-card {
+    flex:1; min-width:160px; background:var(--panel); border:1px solid var(--border);
+    border-radius:var(--radius); padding:18px 20px;
+}
+.summary-card .label { font-size:12px; color:var(--text-muted); margin-bottom:6px; }
+.summary-card .value { font-size:28px; font-weight:700; }
+
+.section { margin-bottom:28px; }
+.section-title { font-size:15px; font-weight:600; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+.section-title::before { content:''; width:3px; height:16px; background:var(--accent); border-radius:2px; }
+
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th, td { padding:10px 14px; text-align:left; border-bottom:1px solid var(--border); }
+th { color:var(--text-muted); font-weight:500; font-size:11px; text-transform:uppercase; letter-spacing:0.04em; white-space:nowrap; }
+td { color:var(--text-soft); }
+tr:hover td { background:rgba(255,255,255,0.02); }
+
+.bar-cell { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+.bar-label { width:140px; flex-shrink:0; text-align:right; font-size:12px; color:var(--text-soft); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.bar-track { flex:1; height:22px; background:rgba(255,255,255,0.04); border-radius:4px; overflow:hidden; position:relative; }
+.bar-fill { height:100%; border-radius:4px; transition:width 0.5s ease; background:linear-gradient(90deg, var(--accent), var(--accent-2)); }
+.bar-val { font-size:11px; color:var(--text-dim); width:50px; flex-shrink:0; }
+
+.tag { display:inline-block; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:600; letter-spacing:0.03em; }
+.tag.green { background:rgba(62,207,142,0.2); color:#3ecf8e; }
+.tag.blue { background:rgba(124,155,255,0.2); color:#7c9bff; }
+.tag.purple { background:rgba(164,139,255,0.2); color:#a48bff; }
+.tag.orange { background:rgba(247,185,85,0.2); color:#f7b955; }
+
+.empty { text-align:center; padding:60px 20px; color:var(--text-muted); }
+.empty h3 { font-size:18px; margin-bottom:8px; color:var(--text-soft); }
+
+/* Tab styles */
+.tabs { display:flex; gap:4px; margin-bottom:24px; flex-wrap:wrap; }
+.tab {
+    padding: 8px 16px; border-radius: 6px; border: 1px solid var(--border);
+    background: transparent; color: var(--text-soft); font-size: 13px;
+    cursor: pointer; font-family: var(--font); transition: all 0.2s;
+}
+.tab:hover { color: var(--text); border-color: rgba(255,255,255,0.3); }
+.tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+.filter-badge {
+    display: inline-block; padding: 4px 10px; border-radius: 4px;
+    font-size: 11px; font-weight: 600; margin-right: 6px; margin-bottom: 6px;
+}
+.filter-badge.g1 { background: rgba(62,207,142,0.15); color: #3ecf8e; border: 1px solid rgba(62,207,142,0.3); }
+.filter-badge.g2 { background: rgba(124,155,255,0.15); color: #7c9bff; border: 1px solid rgba(124,155,255,0.3); }
+.filter-badge.g3 { background: rgba(164,139,255,0.15); color: #a48bff; border: 1px solid rgba(164,139,255,0.3); }
+.filter-badge.g12 { background: rgba(247,185,85,0.15); color: #f7b955; border: 1px solid rgba(247,185,85,0.3); }
+
+.contact-card {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 14px 16px; margin-bottom: 8px;
+    font-size: 13px;
+}
+.contact-card .name { font-weight: 600; margin-bottom: 4px; }
+.contact-card .info { color: var(--text-muted); font-size: 12px; }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+    <h1>AiKen 用户调研 · 数据看板</h1>
+    <div class="toolbar-right" id="toolbarRight">
+        <span id="connStatus" class="status-dot" title="未连接"></span>
+        <span id="respCount" style="font-size:12px;color:var(--text-muted)">—</span>
+        <button class="btn-sm" id="btnRefresh" onclick="loadData()">刷新</button>
+    </div>
+</div>
+
+<div class="main" id="mainContent">
+    <div id="dashboardContent"></div>
+</div>
+
+<script>
+// ---- State ----
+let GITHUB_TOKEN = '';
+let allResponses = [];
+const REPO = 'shengnanxiang/survey';
+
+// ---- Init ----
+loadData();
+
+async function loadData() {
+    const status = document.getElementById('connStatus');
+    const count = document.getElementById('respCount');
+    status.className = 'status-dot';
+    count.textContent = '加载中...';
+
+    try {
+        const issues = await fetchAllIssues();
+        allResponses = issues.map(issue => {
+            try {
+                const body = issue.body.replace(/```json\n?|```/g, '').trim();
+                const data = JSON.parse(body);
+                if (data.survey !== 'recruit') return null;
+                return { number: issue.number, title: issue.title, ...data };
+            } catch(e) {
+                return null;
+            }
+        }).filter(Boolean);
+
+        status.className = 'status-dot on';
+        count.textContent = allResponses.length + ' 份回答';
+        renderDashboard();
+    } catch(e) {
+        status.className = 'status-dot';
+        count.textContent = '加载失败';
+        console.error(e);
+        document.getElementById('dashboardContent').innerHTML =
+            '<div class="empty"><h3>加载失败</h3><p>' + e.message + '</p></div>';
+    }
+}
+
+async function fetchAllIssues(page = 1, acc = []) {
+    const url = 'https://api.github.com/repos/' + REPO + '/issues?labels=recruit-response&state=all&per_page=100&page=' + page;
+    const headers = { 'Accept': 'application/vnd.github+json' };
+    if (GITHUB_TOKEN) headers['Authorization'] = 'token ' + GITHUB_TOKEN;
+    const resp = await fetch(url, { headers });
+    if (!resp.ok) throw new Error('GitHub API error: ' + resp.status);
+    const issues = await resp.json();
+    const all = acc.concat(issues);
+    if (issues.length === 100) return fetchAllIssues(page + 1, all);
+    return all;
+}
+
+// ---- Group classification ----
+function classifyGroups(r) {
+    const a = r.answers || {};
+    const groups = [];
+
+    // G1: film_experience = no_curious AND filter_app_freq != never
+    if (a.film_experience === 'no_curious' && a.filter_app_freq && a.filter_app_freq !== 'never') {
+        groups.push('G1');
+    }
+    // G2: film still/used OR instant still/used
+    if (a.film_experience === 'yes_still' || a.film_experience === 'yes_used' ||
+        a.instant_experience === 'yes_still' || a.instant_experience === 'yes_used') {
+        groups.push('G2');
+    }
+    // G3: purchased_products has at least one non-none
+    if (Array.isArray(a.purchased_products) && a.purchased_products.some(v => v !== 'none')) {
+        groups.push('G3');
+    }
+
+    return groups;
+}
+
+// ---- Render ----
+function renderDashboard() {
+    if (allResponses.length === 0) {
+        document.getElementById('dashboardContent').innerHTML =
+            '<div class="empty"><h3>暂无数据</h3><p>还没有人提交过问卷。等待第一份回答...</p></div>';
+        return;
+    }
+
+    const html =
+        renderSummary() +
+        renderGroupSection() +
+        renderSingleTable('age', 'Q1. 年龄段', {
+            '18-22': '18-22 岁', '23-27': '23-27 岁', '28-32': '28-32 岁', '33+': '33 岁及以上'
+        }) +
+        renderSingleTable('gender', 'Q2. 性别', {
+            'male': '男', 'female': '女', 'undisclosed': '不愿透露'
+        }) +
+        renderMultiTable('devices', 'Q3. 拍照设备（多选）', {
+            'phone': '手机', 'digital_camera': '数码相机', 'instant': '拍立得',
+            'ccd': 'CCD 老数码相机', 'film': '胶卷相机', 'action': '运动相机', 'other': '其他'
+        }) +
+        renderSingleTable('film_experience', 'Q4. 胶卷相机经历', {
+            'yes_still': '现在还在用', 'yes_used': '用过但不用了',
+            'no_curious': '没用过但好奇', 'no_not_interested': '没用过也不感兴趣'
+        }) +
+        renderSingleTable('instant_experience', 'Q5. 拍立得经历', {
+            'yes_still': '现在还在用', 'yes_used': '用过但不用了', 'never': '从没用过'
+        }) +
+        renderSingleTable('filter_app_freq', 'Q6. 滤镜App使用频率', {
+            'often': '经常使用', 'sometimes': '偶尔使用', 'rarely': '很少使用', 'never': '从未使用过'
+        }) +
+        renderMultiTable('purchased_products', 'Q7. 购买过的产品（多选）', {
+            'ccd_camera': 'CCD 老数码相机', 'charmera': '柯达 Charmera',
+            'instax_pal': '富士 Instax Pal', 'flashback': 'Flashback 等', 'none': '以上都没有'
+        }) +
+        renderSingleTable('share_freq', 'Q8. 社媒分享频率', {
+            'daily': '每天', 'often': '每周几次', 'sometimes': '每月几次', 'rarely': '几乎不'
+        }) +
+        renderMultiTable('share_platforms', 'Q9. 分享平台（多选）', {
+            'xiaohongshu': '小红书', 'wechat': '微信朋友圈', 'douyin': '抖音',
+            'weibo': '微博', 'instagram': 'Instagram', 'other': '其他', 'none': '几乎不分享'
+        }) +
+        renderSingleTable('photo_attitude', 'Q10. 拍照态度', {
+            'mostly_casual': '绝大多数随手记录',
+            'mostly_casual_sometimes_serious': '大部分随手，偶尔认真',
+            'half_half': '两者差不多',
+            'mostly_serious': '大部分认真，偶尔随手',
+            'always_serious': '几乎每次都认真'
+        }) +
+        renderSingleTable('phone_not_enough', 'Q11. "手机少了点感觉"', {
+            'often': '经常有', 'sometimes': '偶尔有', 'once_or_twice': '有过一两次', 'never': '从没有过'
+        }) +
+        renderMultiTable('slow_scenes', 'Q12. 值得慢慢拍的场景（最多5项）', {
+            'citywalk': 'City Walk', 'cafe': '探店打卡', 'travel': '旅行', 'party': '聚会派对',
+            'exhibition': '看展博物馆', 'concert': '演唱会音乐节', 'campus': '校园日常',
+            'outdoor': '户外徒步露营', 'daily': '遛狗带娃', 'other': '其他'
+        }) +
+        renderSingleTable('concept_reaction', 'Q13. 对AiKen概念的第一反应', {
+            'excited': '很有意思，想试试', 'curious_unsure': '有点好奇但不确定',
+            'troublesome': '听起来有点麻烦', 'not_interested': '完全不感兴趣'
+        }) +
+        renderSingleTable('ritual_understanding', 'Q14. 仪式感理解', {
+            'professional': '精心构图调参', 'thoughtful': '每次快门经过思考（胶卷式）',
+            'physical': '立刻拿到实体照片（拍立得式）', 'no_need': '不需要仪式感', 'other': '其他'
+        }) +
+        renderSingleTable('interview_willingness', 'Q15. 线下访谈意愿', {
+            'willing': '很愿意', 'maybe': '看时间', 'unlikely': '不太方便'
+        }) +
+        renderContacts() +
+        renderH1Analysis() +
+        renderH3Analysis();
+
+    document.getElementById('dashboardContent').innerHTML = html;
+}
+
+// ---- Summary ----
+function renderSummary() {
+    const groups = allResponses.map(r => classifyGroups(r));
+    const g1 = groups.filter(g => g.includes('G1')).length;
+    const g2 = groups.filter(g => g.includes('G2')).length;
+    const g3 = groups.filter(g => g.includes('G3')).length;
+    const g12 = groups.filter(g => g.includes('G1') && g.includes('G2')).length;
+
+    return `
+    <div class="summary-row">
+        <div class="summary-card"><div class="label">总回答数</div><div class="value">${allResponses.length}</div></div>
+        <div class="summary-card"><div class="label">G1 胶片好奇者</div><div class="value" style="color:#3ecf8e">${g1}</div></div>
+        <div class="summary-card"><div class="label">G2 胶卷/拍立得经历者</div><div class="value" style="color:#7c9bff">${g2}</div></div>
+        <div class="summary-card"><div class="label">G3 潮玩尝鲜者</div><div class="value" style="color:#a48bff">${g3}</div></div>
+    </div>`;
+}
+
+// ---- Group Section ----
+function renderGroupSection() {
+    const groupData = allResponses.map(r => ({
+        groups: classifyGroups(r),
+        age: r.answers.age,
+        concept: r.answers.concept_reaction,
+        film: r.answers.film_experience,
+        instant: r.answers.instant_experience,
+        purchased: r.answers.purchased_products,
+    }));
+
+    let html = '<div class="section"><div class="section-title">筛选分组详情</div>';
+
+    groupData.forEach((d, i) => {
+        const badges = d.groups.map(g => {
+            const cls = g === 'G1' ? 'g1' : g === 'G2' ? 'g2' : 'g3';
+            return `<span class="filter-badge ${cls}">${g}</span>`;
+        }).join('') || '<span class="filter-badge" style="background:rgba(255,255,255,0.05);color:var(--text-muted)">未匹配</span>';
+        html += `<div style="margin-bottom:4px;font-size:12px;color:var(--text-soft)">
+            #${i+1} ${badges} | ${d.age || '?'}岁 | Q13: ${d.concept || '?'}
+        </div>`;
+    });
+
+    html += '</div>';
+    return html;
+}
+
+// ---- Single choice table ----
+function renderSingleTable(key, title, labels) {
+    const counts = {};
+    Object.keys(labels).forEach(k => { counts[k] = 0; });
+    allResponses.forEach(r => {
+        const val = r.answers && r.answers[key];
+        if (val && counts[val] !== undefined) counts[val]++;
+    });
+
+    const maxVal = Math.max(1, ...Object.values(counts));
+    let html = `<div class="section"><div class="section-title">${title}</div>`;
+
+    Object.entries(labels).forEach(([k, v]) => {
+        const cnt = counts[k] || 0;
+        const pct = allResponses.length ? (cnt / allResponses.length * 100).toFixed(0) : 0;
+        html += `<div class="bar-cell">
+            <div class="bar-label">${v}</div>
+            <div class="bar-track"><div class="bar-fill" style="width:${(cnt/maxVal*100)}%"></div></div>
+            <div class="bar-val">${cnt} (${pct}%)</div>
+        </div>`;
+    });
+
+    html += '</div>';
+    return html;
+}
+
+// ---- Multi choice table ----
+function renderMultiTable(key, title, labels) {
+    const counts = {};
+    Object.keys(labels).forEach(k => { counts[k] = 0; });
+    allResponses.forEach(r => {
+        const vals = r.answers && r.answers[key];
+        if (Array.isArray(vals)) {
+            vals.forEach(v => {
+                if (counts[v] !== undefined) counts[v]++;
+            });
+        }
+    });
+
+    const maxVal = Math.max(1, ...Object.values(counts));
+    let html = `<div class="section"><div class="section-title">${title}</div>`;
+
+    Object.entries(labels).forEach(([k, v]) => {
+        const cnt = counts[k] || 0;
+        html += `<div class="bar-cell">
+            <div class="bar-label">${v}</div>
+            <div class="bar-track"><div class="bar-fill" style="width:${(cnt/maxVal*100)}%"></div></div>
+            <div class="bar-val">${cnt}</div>
+        </div>`;
+    });
+
+    html += '</div>';
+    return html;
+}
+
+// ---- Contacts ----
+function renderContacts() {
+    const contacts = allResponses
+        .map(r => ({
+            name: r.answers && r.answers.contact_name,
+            info: r.answers && r.answers.contact_info,
+            willing: r.answers && r.answers.interview_willingness,
+        }))
+        .filter(c => c.name || c.info);
+
+    if (contacts.length === 0) return '';
+
+    let html = '<div class="section"><div class="section-title">Q16. 联系方式（' + contacts.length + ' 人）</div>';
+    contacts.forEach(c => {
+        const willingLabel = { willing: '很愿意', maybe: '看时间', unlikely: '不太方便' }[c.willing] || '';
+        html += `<div class="contact-card">
+            <div class="name">${escapeHtml(c.name || '—')} <span style="font-weight:400;color:var(--text-muted);font-size:12px">${willingLabel ? '· ' + willingLabel : ''}</span></div>
+            <div class="info">${escapeHtml(c.info || '—')}</div>
+        </div>`;
+    });
+    html += '</div>';
+    return html;
+}
+
+// ---- H1 Analysis ----
+function renderH1Analysis() {
+    let html = '<div class="section"><div class="section-title">H1 仪式体验假设 · 量化分析</div>';
+
+    // Q10 distribution
+    const attitudeLabels = {
+        'mostly_casual': '绝大多数随手', 'mostly_casual_sometimes_serious': '大部分随手',
+        'half_half': '两者差不多', 'mostly_serious': '大部分认真', 'always_serious': '几乎每次都认真'
+    };
+    const attitudeCounts = {};
+    Object.keys(attitudeLabels).forEach(k => { attitudeCounts[k] = 0; });
+    allResponses.forEach(r => {
+        const v = r.answers && r.answers.photo_attitude;
+        if (v && attitudeCounts[v] !== undefined) attitudeCounts[v]++;
+    });
+
+    html += '<table><thead><tr><th>指标</th><th>数据</th></tr></thead><tbody>';
+
+    // Q11: phone_not_enough
+    const q11Counts = {};
+    allResponses.forEach(r => {
+        const v = r.answers && r.answers.phone_not_enough;
+        if (v) q11Counts[v] = (q11Counts[v] || 0) + 1;
+    });
+    const oftenPct = allResponses.length ? ((q11Counts['often'] || 0) / allResponses.length * 100).toFixed(0) : 0;
+    const everPct = allResponses.length ? (((q11Counts['often'] || 0) + (q11Counts['sometimes'] || 0)) / allResponses.length * 100).toFixed(0) : 0;
+    html += `<tr><td>经常感觉"手机少了点感觉"</td><td><strong>${oftenPct}%</strong>（经常有） | ${everPct}% 至少偶尔有</td></tr>`;
+
+    // Q13: concept_reaction
+    const q13Counts = {};
+    allResponses.forEach(r => {
+        const v = r.answers && r.answers.concept_reaction;
+        if (v) q13Counts[v] = (q13Counts[v] || 0) + 1;
+    });
+    const excitedPct = allResponses.length ? ((q13Counts['excited'] || 0) / allResponses.length * 100).toFixed(0) : 0;
+    const positivePct = allResponses.length ? (((q13Counts['excited'] || 0) + (q13Counts['curious_unsure'] || 0)) / allResponses.length * 100).toFixed(0) : 0;
+    html += `<tr><td>对AiKen概念"想试试"</td><td><strong>${excitedPct}%</strong> 很有意思 | ${positivePct}% 正面态度</td></tr>`;
+
+    // Q14: ritual — option B (thoughtful) is closest to AiKen
+    const q14Counts = {};
+    allResponses.forEach(r => {
+        const v = r.answers && r.answers.ritual_understanding;
+        if (v) q14Counts[v] = (q14Counts[v] || 0) + 1;
+    });
+    const thoughtfulPct = allResponses.length ? ((q14Counts['thoughtful'] || 0) / allResponses.length * 100).toFixed(0) : 0;
+    html += `<tr><td>仪式感理解 = "胶卷式思考"</td><td><strong>${thoughtfulPct}%</strong> 与AiKen设计吻合</td></tr>`;
+
+    html += '</tbody></table></div>';
+    return html;
+}
+
+// ---- H3 Analysis ----
+function renderH3Analysis() {
+    const sceneLabels = {
+        'citywalk': 'City Walk', 'cafe': '探店打卡', 'travel': '旅行', 'party': '聚会派对',
+        'exhibition': '看展博物馆', 'concert': '演唱会音乐节', 'campus': '校园日常',
+        'outdoor': '户外徒步露营', 'daily': '遛狗带娃', 'other': '其他'
+    };
+    const sceneCounts = {};
+    Object.keys(sceneLabels).forEach(k => { sceneCounts[k] = 0; });
+    allResponses.forEach(r => {
+        const vals = r.answers && r.answers.slow_scenes;
+        if (Array.isArray(vals)) {
+            vals.forEach(v => { if (sceneCounts[v] !== undefined) sceneCounts[v]++; });
+        }
+    });
+
+    const maxVal = Math.max(1, ...Object.values(sceneCounts));
+    const sorted = Object.entries(sceneCounts).sort((a, b) => b[1] - a[1]);
+
+    let html = '<div class="section"><div class="section-title">H3 场景假设 · "值得慢慢拍"的场景排序</div>';
+    sorted.forEach(([k, cnt]) => {
+        html += `<div class="bar-cell">
+            <div class="bar-label">${sceneLabels[k] || k}</div>
+            <div class="bar-track"><div class="bar-fill" style="width:${(cnt/maxVal*100)}%"></div></div>
+            <div class="bar-val">${cnt}</div>
+        </div>`;
+    });
+    html += '</div>';
+    return html;
+}
+
+// ---- Utils ----
+function escapeHtml(s) {
+    return String(s || '').replace(/[&<>"']/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
+}
+</script>
+</body>
+</html>
