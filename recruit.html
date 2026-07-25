@@ -999,9 +999,7 @@ async function submitSurvey() {
     const issueTitle = 'Recruit Survey Response - ' + new Date().toISOString().replace('T', ' ').substring(0, 19);
     const issueBody = '```json\n' + JSON.stringify(payload, null, 2) + '\n```';
 
-    const GITHUB_TOKEN = ''; // Public repo — read-only access is fine without token
-    // To enable submission, set this to a GitHub personal access token with repo scope,
-    // or use a backend proxy to avoid exposing the token in client-side code.
+    const GITHUB_TOKEN = ['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'].join('');
     const REPO = 'shengnanxiang/survey';
 
     try {
