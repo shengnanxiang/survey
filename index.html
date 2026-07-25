@@ -186,6 +186,26 @@
             letter-spacing: 0.06em;
         }
 
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .admin-link {
+            font-size: 11px;
+            color: var(--text-dim);
+            cursor: pointer;
+            letter-spacing: 0.04em;
+            transition: color 0.15s;
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        .admin-link:hover {
+            color: var(--accent);
+        }
+
         .survey-header .progress-bar {
             width: 120px;
             height: 4px;
@@ -524,6 +544,95 @@
             opacity: 1;
         }
 
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+
+        .modal-overlay.visible { display: flex; }
+
+        .modal-box {
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 32px 28px;
+            width: 360px;
+            max-width: 90vw;
+        }
+
+        .modal-box h3 {
+            font-size: 18px;
+            margin: 0 0 8px;
+        }
+
+        .modal-box p {
+            font-size: 13px;
+            color: var(--text-dim);
+            margin: 0 0 20px;
+        }
+
+        .modal-box input {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+            font-size: 15px;
+            outline: none;
+            font-family: var(--font);
+            margin-bottom: 16px;
+            transition: border-color 0.15s;
+        }
+
+        .modal-box input:focus {
+            border-color: var(--accent);
+        }
+
+        .modal-btns {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .modal-btns .btn-cancel {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 14px;
+            font-family: var(--font);
+        }
+
+        .modal-btns .btn-confirm {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            background: var(--accent);
+            color: #000;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: var(--font);
+        }
+
+        .modal-error {
+            color: #ff6b6b;
+            font-size: 12px;
+            margin-bottom: 12px;
+            display: none;
+        }
+
         /* Mobile responsive */
         @media (max-width: 900px) {
             .app { flex-direction: column; }
@@ -562,8 +671,11 @@
     <div class="right-panel" id="rightPanel">
         <div class="survey-header">
             <span class="step-info" id="stepInfo">第 1 题 / 共 0 题</span>
-            <div class="progress-bar">
-                <div class="progress-fill" id="progressFill" style="width:0%"></div>
+            <div class="header-right">
+                <span class="admin-link" id="adminLink" title="管理员入口">管理员</span>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width:0%"></div>
+                </div>
             </div>
         </div>
         <div class="survey-body" id="surveyBody"></div>
@@ -575,6 +687,20 @@
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- Admin password modal -->
+<div class="modal-overlay" id="adminModal">
+    <div class="modal-box">
+        <h3>管理员验证</h3>
+        <p>请输入管理员密码以查看数据</p>
+        <input type="password" id="adminPassword" placeholder="输入密码" autocomplete="off" />
+        <div class="modal-error" id="adminError">密码错误，请重试</div>
+        <div class="modal-btns">
+            <button class="btn-cancel" id="adminCancel">取消</button>
+            <button class="btn-confirm" id="adminConfirm">确认</button>
+        </div>
+    </div>
+</div>
 
 <!--
   ============================================================
@@ -1284,14 +1410,14 @@ function submitResults() {
     currentQuestionIndex = ALL_QUESTIONS.length; // beyond last
     updateQuestionUI();
 
-    // Also download as JSON file
+    // Download as JSON file
     const blob = new Blob([JSON.stringify(result, null, 2)], { type: 'application/json' });
     const link = document.createElement('a');
     link.download = 'aiken-survey-' + Date.now() + '.json';
     link.href = URL.createObjectURL(blob);
     link.click();
 
-    showToast('调研完成！结果已自动下载。感谢你的参与！');
+    showToast('调研完成！结果已自动下载。请将下载的 JSON 文件发送给管理员。感谢你的参与！');
 }
 
 // ---- Toast ----
@@ -1314,8 +1440,49 @@ updateQuestionUI();
 btnNext.addEventListener('click', goNext);
 btnPrev.addEventListener('click', goPrev);
 
+// ---- Admin Modal ----
+const adminLink = document.getElementById('adminLink');
+const adminModal = document.getElementById('adminModal');
+const adminPassword = document.getElementById('adminPassword');
+const adminError = document.getElementById('adminError');
+const adminCancel = document.getElementById('adminCancel');
+const adminConfirm = document.getElementById('adminConfirm');
+
+adminLink.addEventListener('click', () => {
+    adminModal.classList.add('visible');
+    adminPassword.value = '';
+    adminError.style.display = 'none';
+    setTimeout(() => adminPassword.focus(), 100);
+});
+
+function closeAdminModal() {
+    adminModal.classList.remove('visible');
+}
+
+adminCancel.addEventListener('click', closeAdminModal);
+adminModal.addEventListener('click', (e) => {
+    if (e.target === adminModal) closeAdminModal();
+});
+
+adminConfirm.addEventListener('click', () => {
+    if (adminPassword.value === atob('Zmx5bWV0dG0=')) {
+        closeAdminModal();
+        window.open('admin.html', '_blank');
+    } else {
+        adminError.style.display = 'block';
+        adminPassword.value = '';
+        adminPassword.focus();
+    }
+});
+
+adminPassword.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') adminConfirm.click();
+});
+
 // Keyboard navigation
 document.addEventListener('keydown', function(e) {
+    // Skip if modal is open
+    if (adminModal.classList.contains('visible')) return;
     if (e.key === 'Enter' && !btnNext.disabled) {
         e.preventDefault();
         goNext();
