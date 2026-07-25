@@ -347,6 +347,11 @@
             line-height: 1.6;
         }
 
+        .highlight-note {
+            color: var(--accent);
+            font-weight: 500;
+        }
+
         .options-list {
             display: flex;
             flex-direction: column;
@@ -595,6 +600,33 @@
 
         @keyframes spin { to { transform: rotate(360deg); } }
 
+        /* Small screen blocker */
+        .screen-blocker {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            z-index: 9999;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .screen-blocker.active { display: flex; }
+
+        .screen-blocker h2 {
+            font-size: 22px;
+            margin-bottom: 12px;
+        }
+
+        .screen-blocker p {
+            font-size: 14px;
+            color: var(--text-muted);
+            line-height: 1.7;
+        }
+
         /* Already answered notice */
         .answered-notice {
             display: flex;
@@ -744,6 +776,19 @@
     </style>
 </head>
 <body>
+
+<!-- Small screen blocker -->
+<div class="screen-blocker" id="screenBlocker">
+    <div class="screen-blocker-content">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="56" height="56" style="color:var(--accent);margin-bottom:20px">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+            <line x1="8" y1="21" x2="16" y2="21"/>
+            <line x1="12" y1="17" x2="12" y2="21"/>
+        </svg>
+        <h2>请使用大屏设备</h2>
+        <p>本调研需要在平板或电脑上完成<br>请使用横屏模式或更大屏幕的设备打开此链接</p>
+    </div>
+</div>
 
 <div class="app">
     <!-- Left: Image Preview + Style Strip -->
@@ -961,9 +1006,9 @@ const ALL_QUESTIONS = [
         type: 'welcome',
         title: '欢迎参加 AiKen 风格偏好调研',
         subtitle: `
-            <p>请先 <strong>上传一张你自己的照片</strong>（建议选择人像、街景或静物类照片），然后点击下方不同风格查看效果。</p>
-            <p>浏览完所有风格后，请逐题作答。每道题 <strong>必须回答才能继续</strong>，且提交后 <strong>不能返回修改</strong>。</p>
-            <p>整个流程大约需要 <strong>8-12 分钟</strong>。感谢你的参与！</p>
+            <p>请先上传你自己的照片<span class="highlight-note">（最多支持5张。建议选择人像、街景、静物等不同类照片）</span>，然后点击下方不同风格查看效果。</p>
+            <p>浏览完所有风格后，请逐题作答。<span class="highlight-note">每道题必须回答才能继续，且提交后不能返回修改。</span></p>
+            <p>整个流程大约需要 8-12 分钟。感谢你的参与！</p>
         `,
         required: false,
     },
@@ -1746,6 +1791,16 @@ function showToast(msg) {
 }
 
 // ---- Init ----
+// Small screen detection
+const screenBlocker = document.getElementById('screenBlocker');
+function checkScreenSize() {
+    const tooSmall = window.innerWidth < 900 || window.innerHeight < 600;
+    screenBlocker.classList.toggle('active', tooSmall);
+}
+checkScreenSize();
+window.addEventListener('resize', checkScreenSize);
+if (screenBlocker.classList.contains('active')) return; // Don't init app on small screens
+
 buildThumbStrip();
 buildStyleStrip();
 
