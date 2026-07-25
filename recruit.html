@@ -885,38 +885,58 @@ function updateNavButtons() {
 }
 
 // ============================================================
-// EVENT BINDING
+// EVENT BINDING (using event delegation to avoid re-render flicker)
 // ============================================================
 function bindQuestionEvents(q) {
-    surveyBody.querySelectorAll('.option-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const value = this.dataset.value;
-            const isMulti = this.dataset.multi === 'true';
-            const isCustom = this.dataset.custom === 'true';
+    // Use a single delegated click handler on surveyBody to avoid re-binding
+    // Store handler reference so we can remove it on re-render
+    const handler = function(e) {
+        const btn = e.target.closest('.option-btn');
+        if (!btn) return;
 
-            if (q.type === 'single') {
-                answers[q.id] = value;
-            } else if (q.type === 'multi') {
-                let arr = Array.isArray(answers[q.id]) ? [...answers[q.id]] : [];
-                if (value === 'none') {
-                    arr = ['none'];
-                } else {
-                    arr = arr.filter(v => v !== 'none');
-                    if (q.maxSelect && arr.length >= q.maxSelect && !arr.includes(value)) {
-                        showToast(`最多选择 ${q.maxSelect} 项`);
-                        return;
-                    }
-                    if (arr.includes(value)) {
-                        arr = arr.filter(v => v !== value);
-                    } else {
-                        arr.push(value);
-                    }
+        const value = btn.dataset.value;
+        const isMulti = btn.dataset.multi === 'true';
+
+        if (q.type === 'single') {
+            answers[q.id] = value;
+            // Update UI in-place: toggle selected class
+            surveyBody.querySelectorAll('.option-btn').forEach(b => {
+                b.classList.toggle('selected', b.dataset.value === value);
+            });
+            // Toggle custom input visibility
+            toggleCustomInput(q);
+        } else if (q.type === 'multi') {
+            let arr = Array.isArray(answers[q.id]) ? [...answers[q.id]] : [];
+            if (value === 'none') {
+                arr = ['none'];
+            } else {
+                arr = arr.filter(v => v !== 'none');
+                if (q.maxSelect && arr.length >= q.maxSelect && !arr.includes(value)) {
+                    showToast(`最多选择 ${q.maxSelect} 项`);
+                    return;
                 }
-                answers[q.id] = arr;
+                if (arr.includes(value)) {
+                    arr = arr.filter(v => v !== value);
+                } else {
+                    arr.push(value);
+                }
             }
-            renderQuestion();
-        });
-    });
+            answers[q.id] = arr;
+            // Update UI in-place
+            surveyBody.querySelectorAll('.option-btn').forEach(b => {
+                b.classList.toggle('selected', arr.includes(b.dataset.value));
+            });
+            // Toggle custom input visibility
+            toggleCustomInput(q);
+        }
+    };
+
+    // Remove previous handler if exists, then attach
+    if (surveyBody._optionHandler) {
+        surveyBody.removeEventListener('click', surveyBody._optionHandler);
+    }
+    surveyBody._optionHandler = handler;
+    surveyBody.addEventListener('click', handler);
 
     // Custom text input
     const customInput = document.getElementById(`custom_${q.id}`);
@@ -933,6 +953,21 @@ function bindQuestionEvents(q) {
             answers[q.id] = this.value;
         });
     }
+}
+
+function toggleCustomInput(q) {
+    const customInput = document.getElementById(`custom_${q.id}`);
+    if (!customInput) return;
+    const answer = answers[q.id];
+    let show = false;
+    if (q.type === 'single') {
+        const opt = q.options.find(o => o.value === answer);
+        show = opt && opt.custom;
+    } else if (q.type === 'multi') {
+        show = Array.isArray(answer) && answer.includes('other');
+    }
+    customInput.style.display = show ? 'block' : 'none';
+    if (!show) customInput.value = '';
 }
 
 // ============================================================
