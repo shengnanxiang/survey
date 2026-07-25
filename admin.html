@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AiKen 调研数据看板</title>
+<style>
+:root {
+    --bg: #0e1220;
+    --panel: #171c2e;
+    --border: #262c44;
+    --text: #e8ecf5;
+    --text-soft: #b3bacd;
+    --text-muted: #7d859e;
+    --accent: #7c9bff;
+    --accent-2: #a48bff;
+    --success: #3ecf8e;
+    --warn: #f7b955;
+    --radius: 12px;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { height:100%; background:var(--bg); color:var(--text); font-family:var(--font); }
+body { display:flex; flex-direction:column; }
+
+/* Header */
+.toolbar {
+    padding: 16px 28px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+}
+.toolbar h1 { font-size: 20px; font-weight: 700; }
+.toolbar-right { display:flex; align-items:center; gap:12px; }
+.toolbar-right input {
+    padding: 8px 12px; border-radius: 6px; border:1px solid var(--border);
+    background:var(--panel); color:var(--text); font-size:13px; outline:none;
+    width: 340px; font-family: monospace;
+}
+.toolbar-right input:focus { border-color: var(--accent); }
+.btn {
+    padding: 8px 16px; border-radius: 6px; border:none; font-size:13px; font-weight:600;
+    cursor:pointer; font-family:var(--font); white-space:nowrap;
+}
+.btn-primary { background:var(--accent); color:#fff; }
+.btn-primary:hover { background:var(--accent-2); }
+.btn-sm { padding:5px 10px; font-size:11px; border-radius:4px; background:rgba(255,255,255,0.06); border:1px solid var(--border); color:var(--text-soft); cursor:pointer; }
+.btn-sm:hover { color:var(--text); border-color:var(--accent); }
+.status-dot { width:8px; height:8px; border-radius:50%; background:var(--text-muted); flex-shrink:0; }
+.status-dot.on { background:var(--success); box-shadow:0 0 6px rgba(62,207,142,0.4); }
+
+/* Main content */
+.main {
+    flex:1; overflow-y:auto; padding:24px 28px;
+    scrollbar-width:thin; scrollbar-color:rgba(255,255,255,0.08) transparent;
+}
+.main::-webkit-scrollbar { width:5px; }
+.main::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.08); border-radius:3px; }
+
+/* Summary cards */
+.summary-row { display:flex; gap:16px; margin-bottom:24px; flex-wrap:wrap; }
+.summary-card {
+    flex:1; min-width:160px; background:var(--panel); border:1px solid var(--border);
+    border-radius:var(--radius); padding:18px 20px;
+}
+.summary-card .label { font-size:12px; color:var(--text-muted); margin-bottom:6px; }
+.summary-card .value { font-size:28px; font-weight:700; }
+
+/* Section */
+.section { margin-bottom:28px; }
+.section-title { font-size:15px; font-weight:600; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+.section-title::before { content:''; width:3px; height:16px; background:var(--accent); border-radius:2px; }
+
+/* Table */
+.table-wrap { overflow-x:auto; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th, td { padding:10px 14px; text-align:left; border-bottom:1px solid var(--border); }
+th { color:var(--text-muted); font-weight:500; font-size:11px; text-transform:uppercase; letter-spacing:0.04em; white-space:nowrap; }
+td { color:var(--text-soft); }
+tr:hover td { background:rgba(255,255,255,0.02); }
+
+/* Bar chart */
+.bar-cell { display:flex; align-items:center; gap:10px; }
+.bar-label { width:80px; flex-shrink:0; text-align:right; font-size:12px; color:var(--text-soft); }
+.bar-track { flex:1; height:22px; background:rgba(255,255,255,0.04); border-radius:4px; overflow:hidden; position:relative; }
+.bar-fill { height:100%; border-radius:4px; transition:width 0.5s ease; }
+.bar-fill.gold { background:linear-gradient(90deg, #f39c12, #e67e22); }
+.bar-fill.blue { background:linear-gradient(90deg, #3498db, #2980b9); }
+.bar-fill.gray { background:linear-gradient(90deg, #95a5a6, #7f8c8d); }
+.bar-fill.pink { background:linear-gradient(90deg, #e84393, #d63384); }
+.bar-fill.cyan { background:linear-gradient(90deg, #00b894, #00a381); }
+.bar-fill.purple { background:linear-gradient(90deg, #9b59b6, #8e44ad); }
+.bar-fill.accent { background:linear-gradient(90deg, var(--accent), var(--accent-2)); }
+.bar-val { font-size:11px; color:var(--text-dim); width:36px; flex-shrink:0; }
+
+/* Tag */
+.tag { display:inline-block; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:600; letter-spacing:0.03em; }
+.tag.gold { background:rgba(243,156,18,0.2); color:#f39c12; }
+.tag.blue { background:rgba(52,152,219,0.2); color:#3498db; }
+.tag.gray { background:rgba(149,165,166,0.2); color:#95a5a6; }
+.tag.pink { background:rgba(232,67,147,0.2); color:#e84393; }
+.tag.cyan { background:rgba(0,184,148,0.2); color:#00b894; }
+.tag.purple { background:rgba(155,89,182,0.2); color:#9b59b6; }
+
+/* Empty */
+.empty { text-align:center; padding:60px 20px; color:var(--text-muted); }
+.empty h3 { font-size:18px; margin-bottom:8px; color:var(--text-soft); }
+.empty p { font-size:13px; }
+
+/* Login prompt */
+.login-prompt { text-align:center; padding:80px 40px; }
+.login-prompt h2 { font-size:22px; margin-bottom:10px; }
+.login-prompt p { color:var(--text-muted); margin-bottom:24px; }
+.login-prompt input { margin-bottom:12px; }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+    <h1>AiKen 风格偏��调研 · 数据看板</h1>
+    <div class="toolbar-right" id="toolbarRight">
+        <span id="connStatus" class="status-dot" title="未连接"></span>
+        <span id="respCount" style="font-size:12px;color:var(--text-muted)">—</span>
+        <button class="btn-sm" id="btnRefresh" onclick="loadData()">刷新</button>
+    </div>
+</div>
+
+<div class="main" id="mainContent">
+    <div class="login-prompt" id="loginPrompt">
+        <h2>连接数据源</h2>
+        <p>输入 GitHub Personal Access Token 以拉取调研数据<br><small style="color:var(--text-muted)">Token 仅保存在当前浏览器会话中，不会上传</small></p>
+        <input type="password" id="tokenInput" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" style="width:380px;max-width:90%;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--panel);color:var(--text);font-size:14px;outline:none;font-family:monospace;" />
+        <br>
+        <button class="btn btn-primary" onclick="connectWithToken()">连接</button>
+    </div>
+    <div id="dashboardContent" style="display:none"></div>
+</div>
+
+<script>
+// ---- State ----
+let GITHUB_TOKEN = sessionStorage.getItem('aiken_admin_token') || '';
+let allResponses = [];
+const REPO = 'shengnanxiang/survey';
+
+// ---- Style config (must match survey.html) ----
+const STYLE_MAP = {
+    'kodak-gold': { name: '浓郁美式', color: '#f39c12', cls: 'gold' },
+    'fuji-c200':  { name: '清新日系', color: '#3498db', cls: 'blue' },
+    'ilford-hp5': { name: '经典黑白', color: '#95a5a6', cls: 'gray' },
+    'xpro':       { name: '交叉冲洗', color: '#e84393', cls: 'pink' },
+    'cyanotype':  { name: '传统蓝晒', color: '#00b894', cls: 'cyan' },
+    'cyberpunk':  { name: '未来怀旧', color: '#9b59b6', cls: 'purple' },
+};
+
+const SCENE_MAP = {
+    'portrait': '人像',
+    'street': '街景/建筑',
+    'still': '静物/食物',
+    'night': '夜景',
+    'none': '都不适合',
+};
+
+// ---- Init ----
+if (GITHUB_TOKEN) {
+    document.getElementById('loginPrompt').style.display = 'none';
+    document.getElementById('dashboardContent').style.display = 'block';
+    loadData();
+}
+
+function connectWithToken() {
+    const tok = document.getElementById('tokenInput').value.trim();
+    if (!tok) return;
+    GITHUB_TOKEN = tok;
+    sessionStorage.setItem('aiken_admin_token', tok);
+    document.getElementById('loginPrompt').style.display = 'none';
+    document.getElementById('dashboardContent').style.display = 'block';
+    loadData();
+}
+
+async function loadData() {
+    if (!GITHUB_TOKEN) return;
+    const status = document.getElementById('connStatus');
+    const count = document.getElementById('respCount');
+    status.className = 'status-dot';
+    count.textContent = '加载中...';
+
+    try {
+        const issues = await fetchAllIssues();
+        allResponses = issues.map(issue => {
+            try {
+                const body = issue.body.replace(/```json\n?|```/g, '').trim();
+                const data = JSON.parse(body);
+                return { number: issue.number, title: issue.title, ...data };
+            } catch(e) {
+                return null;
+            }
+        }).filter(Boolean);
+
+        status.className = 'status-dot on';
+        count.textContent = allResponses.length + ' 份回答';
+        renderDashboard();
+    } catch(e) {
+        status.className = 'status-dot';
+        count.textContent = '加载失败';
+        console.error(e);
+        document.getElementById('dashboardContent').innerHTML =
+            '<div class="empty"><h3>加载失败</h3><p>' + e.message + '</p></div>';
+    }
+}
+
+async function fetchAllIssues(page = 1, acc = []) {
+    const url = 'https://api.github.com/repos/' + REPO + '/issues?labels=survey-response&state=all&per_page=100&page=' + page;
+    const resp = await fetch(url, {
+        headers: {
+            'Authorization': 'token ' + GITHUB_TOKEN,
+            'Accept': 'application/vnd.github+json',
+        }
+    });
+    if (!resp.ok) throw new Error('GitHub API error: ' + resp.status);
+    const issues = await resp.json();
+    const all = acc.concat(issues);
+    if (issues.length === 100) return fetchAllIssues(page + 1, all);
+    return all;
+}
+
+// ---- Render ----
+function renderDashboard() {
+    if (allResponses.length === 0) {
+        document.getElementById('dashboardContent').innerHTML =
+            '<div class="empty"><h3>暂无数据</h3><p>还没有人提交过问卷。等待第一份回答...</p></div>';
+        return;
+    }
+
+    const html = renderSummary() + renderRatingTable() + renderSceneTable() + renderIntensityTable() + renderPreferenceSection() + renderOpenFeedback();
+    document.getElementById('dashboardContent').innerHTML = html;
+}
+
+function renderSummary() {
+    return `
+    <div class="summary-row">
+        <div class="summary-card"><div class="label">总回答数</div><div class="value">${allResponses.length}</div></div>
+        <div class="summary-card"><div class="label">最新提交</div><div class="value" style="font-size:16px">${allResponses[allResponses.length-1].timestamp ? allResponses[allResponses.length-1].timestamp.substring(0,10) : '—'}</div></div>
+    </div>`;
+}
+
+function renderRatingTable() {
+    // Calculate average ratings per style
+    const styleScores = {};
+    Object.keys(STYLE_MAP).forEach(id => { styleScores[id] = { scores: [], name: STYLE_MAP[id].name, cls: STYLE_MAP[id].cls }; });
+
+    allResponses.forEach(r => {
+        Object.keys(STYLE_MAP).forEach(id => {
+            const key = 'rating_' + id;
+            const val = r.answers && r.answers[key];
+            if (typeof val === 'number') styleScores[id].scores.push(val);
+        });
+    });
+
+    const rows = Object.entries(styleScores).map(([id, data]) => {
+        const avg = data.scores.length ? (data.scores.reduce((a,b)=>a+b,0) / data.scores.length).toFixed(2) : '—';
+        const pct = data.scores.length ? (parseFloat(avg) / 5 * 100) : 0;
+        return `<tr>
+            <td><span class="tag ${data.cls}">${data.name}</span></td>
+            <td>${data.scores.length} 人</td>
+            <td>
+                <div class="bar-cell">
+                    <div class="bar-track"><div class="bar-fill ${data.cls}" style="width:${pct}%"></div></div>
+                    <div class="bar-val">${avg}</div>
+                </div>
+            </td>
+        </tr>`;
+    }).join('');
+
+    return `
+    <div class="section">
+        <div class="section-title">风格评分均值（1-5）</div>
+        <div class="table-wrap"><table><thead><tr><th>风格</th><th>样本量</th><th>均分</th></tr></thead><tbody>${rows}</tbody></table></div>
+    </div>`;
+}
+
+function renderSceneTable() {
+    const styleScenes = {};
+    Object.keys(STYLE_MAP).forEach(id => { styleScenes[id] = { name: STYLE_MAP[id].name, cls: STYLE_MAP[id].cls, scenes: {} }; });
+
+    allResponses.forEach(r => {
+        Object.keys(STYLE_MAP).forEach(id => {
+            const key = 'scene_' + id;
+            const vals = r.answers && r.answers[key];
+            if (Array.isArray(vals)) {
+                vals.forEach(v => {
+                    styleScenes[id].scenes[v] = (styleScenes[id].scenes[v] || 0) + 1;
+                });
+            }
+        });
+    });
+
+    const sceneKeys = ['portrait', 'street', 'still', 'night'];
+    let html = '<div class="section"><div class="section-title">场景适配分布（人次）</div><div class="table-wrap"><table><thead><tr><th>风格</th>';
+    sceneKeys.forEach(s => html += '<th>' + SCENE_MAP[s] + '</th>');
+    html += '</tr></thead><tbody>';
+
+    Object.entries(styleScenes).forEach(([id, data]) => {
+        html += '<tr><td><span class="tag ' + data.cls + '">' + data.name + '</span></td>';
+        sceneKeys.forEach(s => {
+            html += '<td>' + (data.scenes[s] || 0) + '</td>';
+        });
+        html += '</tr>';
+    });
+
+    html += '</tbody></table></div></div>';
+    return html;
+}
+
+function renderIntensityTable() {
+    const styleIntensity = {};
+    Object.keys(STYLE_MAP).forEach(id => { styleIntensity[id] = { name: STYLE_MAP[id].name, cls: STYLE_MAP[id].cls, too_light:0, just_right:0, too_strong:0 }; });
+
+    allResponses.forEach(r => {
+        Object.keys(STYLE_MAP).forEach(id => {
+            const key = 'intensity_' + id;
+            const val = r.answers && r.answers[key];
+            if (val && styleIntensity[id][val] !== undefined) styleIntensity[id][val]++;
+        });
+    });
+
+    const rows = Object.entries(styleIntensity).map(([id, data]) => {
+        const total = data.too_light + data.just_right + data.too_strong || 1;
+        return `<tr>
+            <td><span class="tag ${data.cls}">${data.name}</span></td>
+            <td>${data.too_light} (${(data.too_light/total*100).toFixed(0)}%)</td>
+            <td style="color:var(--success)">${data.just_right} (${(data.just_right/total*100).toFixed(0)}%)</td>
+            <td>${data.too_strong} (${(data.too_strong/total*100).toFixed(0)}%)</td>
+        </tr>`;
+    }).join('');
+
+    return `
+    <div class="section">
+        <div class="section-title">风格浓度感知</div>
+        <div class="table-wrap"><table><thead><tr><th>风格</th><th>太淡了</th><th>正好</th><th>太浓了</th></tr></thead><tbody>${rows}</tbody></table></div>
+    </div>`;
+}
+
+function renderPreferenceSection() {
+    // favorite_single
+    const favSingle = {};
+    Object.keys(STYLE_MAP).forEach(id => { favSingle[id] = { name: STYLE_MAP[id].name, cls: STYLE_MAP[id].cls, count: 0 }; });
+    allResponses.forEach(r => {
+        const val = r.answers && r.answers['favorite_single'];
+        if (val && favSingle[val]) favSingle[val].count++;
+    });
+    const maxFav = Math.max(1, ...Object.values(favSingle).map(v=>v.count));
+
+    let html = '<div class="section"><div class="section-title">首选风格（只能选一个）</div>';
+    Object.entries(favSingle).sort((a,b)=>b[1].count-a[1].count).forEach(([id,data]) => {
+        html += `<div class="bar-cell" style="margin-bottom:8px">
+            <div class="bar-label"><span class="tag ${data.cls}">${data.name}</span></div>
+            <div class="bar-track"><div class="bar-fill ${data.cls}" style="width:${(data.count/maxFav*100)}%"></div></div>
+            <div class="bar-val">${data.count} 票</div>
+        </div>`;
+    });
+    html += '</div>';
+
+    // direction
+    const dirCount = {};
+    allResponses.forEach(r => {
+        const val = r.answers && r.answers['direction'];
+        if (val) dirCount[val] = (dirCount[val] || 0) + 1;
+    });
+    html += '<div class="section"><div class="section-title">风格方向偏好</div><div class="table-wrap"><table><thead><tr><th>方向</th><th>人数</th></tr></thead><tbody>';
+    const dirLabels = { traditional: '传统胶卷感', experimental: '艺术实验感', both: '都喜欢', neither: '都不太喜欢' };
+    Object.entries(dirLabels).forEach(([k,v]) => {
+        html += '<tr><td>' + v + '</td><td>' + (dirCount[k] || 0) + '</td></tr>';
+    });
+    html += '</tbody></table></div></div>';
+
+    // monthly_new
+    const mnCount = {};
+    allResponses.forEach(r => {
+        const val = r.answers && r.answers['monthly_new'];
+        if (val) mnCount[val] = (mnCount[val] || 0) + 1;
+    });
+    html += '<div class="section"><div class="section-title">对新风格的期待</div><div class="table-wrap"><table><thead><tr><th>态度</th><th>人数</th></tr></thead><tbody>';
+    const mnLabels = { excited: '非常期待', interested: '有兴趣', neutral: '无所谓', unnecessary: '没必要' };
+    Object.entries(mnLabels).forEach(([k,v]) => {
+        html += '<tr><td>' + v + '</td><td>' + (mnCount[k] || 0) + '</td></tr>';
+    });
+    html += '</tbody></table></div></div>';
+
+    // pay
+    const payCount = {};
+    allResponses.forEach(r => {
+        const val = r.answers && r.answers['pay_willingness'];
+        if (val) payCount[val] = (payCount[val] || 0) + 1;
+    });
+    html += '<div class="section"><div class="section-title">付费意愿</div><div class="table-wrap"><table><thead><tr><th>态度</th><th>人数</th></tr></thead><tbody>';
+    const payLabels = { yes: '愿意付费', cheap: '几块钱可以', no: '不愿意', unsure: '不确定' };
+    Object.entries(payLabels).forEach(([k,v]) => {
+        html += '<tr><td>' + v + '</td><td>' + (payCount[k] || 0) + '</td></tr>';
+    });
+    html += '</tbody></table></div></div>';
+
+    return html;
+}
+
+function renderOpenFeedback() {
+    const feedbacks = allResponses
+        .map(r => ({ own: r.answers && r.answers['own_photo_diff'], open: r.answers && r.answers['open_feedback'] }))
+        .filter(f => (f.own && f.own.trim()) || (f.open && f.open.trim()));
+
+    if (feedbacks.length === 0) return '';
+
+    let html = '<div class="section"><div class="section-title">开放反馈（' + feedbacks.length + ' 条）</div>';
+    feedbacks.forEach((f, i) => {
+        if (f.own && f.own.trim()) html += '<div style="background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:10px"><div style="font-size:11px;color:var(--accent);margin-bottom:6px;">用自己的照片 vs 看样片的感受</div><div style="font-size:13px;color:var(--text-soft);line-height:1.6">' + escapeHtml(f.own) + '</div></div>';
+        if (f.open && f.open.trim()) html += '<div style="background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:10px"><div style="font-size:11px;color:var(--accent);margin-bottom:6px;">其他建议</div><div style="font-size:13px;color:var(--text-soft);line-height:1.6">' + escapeHtml(f.open) + '</div></div>';
+    });
+    html += '</div>';
+    return html;
+}
+
+function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
+}
+</script>
+</body>
+</html>
