@@ -1363,112 +1363,141 @@ function renderQuestion() {
     const isLocked = isQuestionLocked(q.id);
     const currentAnswer = getAnswer(q.id);
 
-    let html = '<div class="question-block">';
+    // Check if we need to do a full rebuild (question changed) or just an incremental update
+    const currentRenderedId = surveyBody.dataset.questionId;
+    if (currentRenderedId !== q.id) {
+        // Full rebuild
+        let html = '<div class="question-block">';
 
-    // Show locked notice
-    if (isLocked) {
-        html += `
-            <div class="answered-notice">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                你已回答过此题，答案已锁定，不可修改。
-            </div>
-        `;
-    }
-
-    // Style hint for per-style questions
-    if (q.styleName) {
-        const style = STYLES.find(s => s.id === q.styleId);
-        html += `<div class="question-label" style="color:${style ? style.color : 'var(--accent)'}">${q.styleName}</div>`;
-    }
-
-    html += `<div class="question-title">${q.title}</div>`;
-    if (q.subtitle) html += `<div class="question-subtitle">${q.subtitle}</div>`;
-
-    // Render based on type
-    if (q.type === 'single') {
-        html += '<div class="options-list">';
-        q.options.forEach(opt => {
-            const selected = currentAnswer === opt.value;
+        // Show locked notice
+        if (isLocked) {
             html += `
-                <button class="option-btn${selected ? ' selected' : ''}${isLocked ? '' : ''}"
-                        data-value="${opt.value}" ${isLocked ? 'disabled' : ''}>
-                    <div class="option-radio"><div class="option-radio-inner"></div></div>
-                    ${opt.label}
-                </button>
+                <div class="answered-notice">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    你已回答过此题，答案已锁定，不可修改。
+                </div>
             `;
-        });
+        }
+
+        // Style hint for per-style questions
+        if (q.styleName) {
+            const style = STYLES.find(s => s.id === q.styleId);
+            html += `<div class="question-label" style="color:${style ? style.color : 'var(--accent)'}">${q.styleName}</div>`;
+        }
+
+        html += `<div class="question-title">${q.title}</div>`;
+        if (q.subtitle) html += `<div class="question-subtitle">${q.subtitle}</div>`;
+
+        // Render based on type
+        if (q.type === 'single') {
+            html += '<div class="options-list">';
+            q.options.forEach(opt => {
+                html += `
+                    <button class="option-btn" data-value="${opt.value}" ${isLocked ? 'disabled' : ''}>
+                        <div class="option-radio"><div class="option-radio-inner"></div></div>
+                        ${opt.label}
+                    </button>
+                `;
+            });
+            html += '</div>';
+        } else if (q.type === 'multi') {
+            html += '<div class="options-list">';
+            q.options.forEach(opt => {
+                html += `
+                    <button class="option-btn" data-value="${opt.value}" data-multi="true" ${isLocked ? 'disabled' : ''}>
+                        <div class="option-checkbox">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        </div>
+                        ${opt.label}
+                    </button>
+                `;
+            });
+            html += '</div>';
+        } else if (q.type === 'rating1-5') {
+            html += '<div class="rating-row">';
+            for (let i = 1; i <= 5; i++) {
+                html += `<button class="rating-btn" data-value="${i}" ${isLocked ? 'disabled' : ''}>${i}</button>`;
+            }
+            html += '</div>';
+            html += '<div class="rating-labels"><span>很不喜欢</span><span>非常喜欢</span></div>';
+        } else if (q.type === 'text') {
+            html += `<textarea class="text-input" placeholder="输入你的想法..." ${isLocked ? 'readonly' : ''}
+                             data-text="true">${currentAnswer || ''}</textarea>`;
+        }
+
         html += '</div>';
+        surveyBody.innerHTML = html;
+        surveyBody.dataset.questionId = q.id;
+
+        // Attach event listeners (only once after full rebuild)
+        if (!isLocked) {
+            surveyBody.querySelectorAll('.option-btn, .rating-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const value = this.dataset.value;
+                    const isMulti = this.dataset.multi === 'true';
+                    if (q.type === 'single' || q.type === 'rating1-5') {
+                        answers[q.id] = q.type === 'rating1-5' ? parseInt(value) : value;
+                    } else if (q.type === 'multi') {
+                        let arr = Array.isArray(answers[q.id]) ? [...answers[q.id]] : [];
+                        if (value === 'none') {
+                            arr = ['none'];
+                        } else {
+                            arr = arr.filter(v => v !== 'none');
+                            if (q.maxSelect && arr.length >= q.maxSelect && !arr.includes(value)) {
+                                showToast('最多选择 ' + q.maxSelect + ' 项');
+                                return;
+                            }
+                            if (arr.includes(value)) {
+                                arr = arr.filter(v => v !== value);
+                            } else {
+                                arr.push(value);
+                            }
+                        }
+                        answers[q.id] = arr;
+                    }
+                    incrementalUpdateUI();
+                });
+            });
+
+            const textarea = surveyBody.querySelector('.text-input');
+            if (textarea) {
+                textarea.addEventListener('input', function() {
+                    answers[q.id] = this.value;
+                    updateNavButtons();
+                });
+            }
+        }
+    }
+
+    // Always apply current answer state (incremental update)
+    applySelectedState(q, currentAnswer, isLocked);
+}
+
+// Incremental: only update selected CSS classes, no innerHTML rebuild
+function applySelectedState(q, currentAnswer, isLocked) {
+    if (q.type === 'single') {
+        surveyBody.querySelectorAll('.option-btn').forEach(btn => {
+            btn.classList.toggle('selected', btn.dataset.value === String(currentAnswer));
+        });
     } else if (q.type === 'multi') {
         const selectedValues = Array.isArray(currentAnswer) ? currentAnswer : [];
-        html += '<div class="options-list">';
-        q.options.forEach(opt => {
-            const selected = selectedValues.includes(opt.value);
-            html += `
-                <button class="option-btn${selected ? ' selected' : ''}${isLocked ? '' : ''}"
-                        data-value="${opt.value}" data-multi="true" ${isLocked ? 'disabled' : ''}>
-                    <div class="option-checkbox">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                    </div>
-                    ${opt.label}
-                </button>
-            `;
+        surveyBody.querySelectorAll('.option-btn').forEach(btn => {
+            btn.classList.toggle('selected', selectedValues.includes(btn.dataset.value));
         });
-        html += '</div>';
     } else if (q.type === 'rating1-5') {
-        html += '<div class="rating-row">';
-        for (let i = 1; i <= 5; i++) {
-            html += `<button class="rating-btn${currentAnswer === i ? ' selected' : ''}"
-                            data-value="${i}" ${isLocked ? 'disabled' : ''}>${i}</button>`;
-        }
-        html += '</div>';
-        html += '<div class="rating-labels"><span>很不喜欢</span><span>非常喜欢</span></div>';
-    } else if (q.type === 'text') {
-        html += `<textarea class="text-input" placeholder="输入你的想法..." ${isLocked ? 'readonly' : ''}
-                         data-text="true">${currentAnswer || ''}</textarea>`;
-    }
-
-    html += '</div>';
-    surveyBody.innerHTML = html;
-
-    // Attach event listeners
-    if (!isLocked) {
-        surveyBody.querySelectorAll('.option-btn, .rating-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const value = this.dataset.value;
-                const isMulti = this.dataset.multi === 'true';
-                if (q.type === 'single' || q.type === 'rating1-5') {
-                    answers[q.id] = q.type === 'rating1-5' ? parseInt(value) : value;
-                } else if (q.type === 'multi') {
-                    let arr = Array.isArray(answers[q.id]) ? [...answers[q.id]] : [];
-                    // Handle "none" logic for scene questions
-                    if (value === 'none') {
-                        arr = ['none'];
-                    } else {
-                        arr = arr.filter(v => v !== 'none');
-                        if (q.maxSelect && arr.length >= q.maxSelect && !arr.includes(value)) {
-                            showToast('最多选择 ' + q.maxSelect + ' 项');
-                            return;
-                        }
-                        if (arr.includes(value)) {
-                            arr = arr.filter(v => v !== value);
-                        } else {
-                            arr.push(value);
-                        }
-                    }
-                    answers[q.id] = arr;
-                }
-                updateQuestionUI();
-            });
+        surveyBody.querySelectorAll('.rating-btn').forEach(btn => {
+            btn.classList.toggle('selected', parseInt(btn.dataset.value) === currentAnswer);
         });
-
-        const textarea = surveyBody.querySelector('.text-input');
-        if (textarea) {
-            textarea.addEventListener('input', function() {
-                answers[q.id] = this.value;
-                updateNavButtons();
-            });
-        }
     }
+}
+
+// Lightweight UI update after click — no full rebuild
+function incrementalUpdateUI() {
+    const q = getCurrentQuestion();
+    if (!q || q.type === 'welcome') return;
+    const currentAnswer = getAnswer(q.id);
+    applySelectedState(q, currentAnswer, false);
+    updateNavButtons();
 }
 
 function renderCompletion() {
