@@ -655,7 +655,7 @@ const QUESTIONS = [
         section: '四、参与意愿',
         title: 'Q16. 请留下你的联系方式',
         subtitle: '姓名/昵称',
-        required: false,
+        required: true,
         condition: { question: 'interview_willingness', not: 'unlikely' },
     },
     {
@@ -663,7 +663,7 @@ const QUESTIONS = [
         type: 'single',
         title: '',
         subtitle: '你所在的城市是？',
-        required: false,
+        required: true,
         condition: { question: 'interview_willingness', not: 'unlikely' },
         options: [
             { value: 'shanghai', label: '上海' },
@@ -740,6 +740,11 @@ function isQuestionActive(q) {
     return true;
 }
 
+// Get all visible questions (required + conditionally active non-required like contact_info)
+function getVisibleQuestions() {
+    return QUESTIONS.filter(q => q.type !== 'welcome' && isQuestionActive(q));
+}
+
 function getRequiredQuestions() {
     return QUESTIONS.filter(q => q.type !== 'welcome' && q.required && isQuestionActive(q));
 }
@@ -769,7 +774,7 @@ function renderQuestion() {
         html += `<div class="section-label">${q.section}</div>`;
     }
 
-    html += `<div class="question-title">${q.title}</div>`;
+    html += `<div class="question-title">${q.title || '&nbsp;'}</div>`;
     if (q.subtitle) {
         html += `<div class="question-subtitle">${q.subtitle}</div>`;
     }
@@ -855,9 +860,9 @@ function updateProgress() {
         progressFill.style.width = '0%';
         return;
     }
-    const required = getRequiredQuestions();
-    const idx = required.findIndex(rq => rq.id === q.id) + 1;
-    const total = required.length;
+    const visible = getVisibleQuestions();
+    const idx = visible.findIndex(rq => rq.id === q.id) + 1;
+    const total = visible.length;
     stepInfo.textContent = `第 ${idx} 题 / 共 ${total} 题`;
     progressFill.style.width = ((idx / total) * 100) + '%';
 }
@@ -869,11 +874,11 @@ function updateNavButtons() {
     btnPrev.style.visibility = 'visible';
     btnPrev.disabled = false;
 
-    const required = getRequiredQuestions();
-    const idx = required.findIndex(rq => rq.id === q.id);
-    const isLastRequired = idx === required.length - 1;
+    const visible = getVisibleQuestions();
+    const idx = visible.findIndex(rq => rq.id === q.id);
+    const isLastVisible = idx === visible.length - 1;
 
-    if (isLastRequired) {
+    if (isLastVisible) {
         btnNext.textContent = '提交';
         btnNext.className = 'btn btn-submit';
         btnNext.disabled = false;
@@ -978,10 +983,10 @@ function goNext() {
     if (!q) return;
 
     if (q.type === 'welcome') {
-        // Jump to first required question
-        const required = getRequiredQuestions();
-        if (required.length > 0) {
-            currentQuestionIndex = QUESTIONS.indexOf(required[0]);
+        // Jump to first visible question
+        const visible = getVisibleQuestions();
+        if (visible.length > 0) {
+            currentQuestionIndex = QUESTIONS.indexOf(visible[0]);
         } else {
             currentQuestionIndex++;
         }
@@ -989,29 +994,28 @@ function goNext() {
         return;
     }
 
-    if (!isQuestionAnswered(q.id)) {
+    if (q.required && !isQuestionAnswered(q.id)) {
         showToast('请先回答此题');
         return;
     }
 
-    const required = getRequiredQuestions();
-    const idx = required.findIndex(rq => rq.id === q.id);
-    const isLastRequired = idx === required.length - 1;
+    // Use visible questions (not just required) to determine flow
+    const visible = getVisibleQuestions();
+    const idx = visible.findIndex(rq => rq.id === q.id);
+    const isLastVisible = idx === visible.length - 1;
 
-    if (isLastRequired) {
+    if (isLastVisible) {
         submitSurvey();
         return;
     }
 
-    // Find next required + active question
-    for (let i = idx + 1; i < required.length; i++) {
-        if (isQuestionActive(required[i])) {
-            currentQuestionIndex = QUESTIONS.indexOf(required[i]);
-            renderQuestion();
-            return;
-        }
+    // Find next visible question
+    for (let i = idx + 1; i < visible.length; i++) {
+        currentQuestionIndex = QUESTIONS.indexOf(visible[i]);
+        renderQuestion();
+        return;
     }
-    // No more active questions — submit
+    // No more — submit
     submitSurvey();
 }
 
@@ -1019,13 +1023,14 @@ function goPrev() {
     const q = getCurrentQuestion();
     if (!q || q.type === 'welcome') return;
 
-    // Find previous required + active question
+    const visible = getVisibleQuestions();
+    const idx = visible.findIndex(rq => rq.id === q.id);
+
+    // Find previous visible question
     for (let i = idx - 1; i >= 0; i--) {
-        if (isQuestionActive(required[i])) {
-            currentQuestionIndex = QUESTIONS.indexOf(required[i]);
-            renderQuestion();
-            return;
-        }
+        currentQuestionIndex = QUESTIONS.indexOf(visible[i]);
+        renderQuestion();
+        return;
     }
     // Go back to welcome
     currentQuestionIndex = 0;
