@@ -232,7 +232,7 @@ async function loadData() {
 }
 
 async function fetchAllIssues(page = 1, acc = []) {
-    const url = 'https://api.github.com/repos/' + REPO + '/issues?labels=recruit-response&state=all&per_page=100&page=' + page;
+    const url = 'https://api.github.com/repos/' + REPO + '/issues?labels=recruit-response&state=open&per_page=100&page=' + page;
     const headers = { 'Accept': 'application/vnd.github+json' };
     if (GITHUB_TOKEN) headers['Authorization'] = 'token ' + GITHUB_TOKEN;
     const resp = await fetch(url, { headers });
