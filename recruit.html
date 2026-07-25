@@ -641,6 +641,7 @@ const QUESTIONS = [
         type: 'single',
         section: '四、参与意愿',
         title: 'Q15. 如果邀请你参加一场约 45-60 分钟的线下 1 对 1 访谈（有茶歇和小礼品），你的参与意愿是？',
+        subtitle: '访谈地点在上海，本地用户优先',
         required: true,
         options: [
             { value: 'willing', label: '很愿意，时间方便就可以' },
@@ -652,16 +653,30 @@ const QUESTIONS = [
         id: 'contact_name',
         type: 'text',
         section: '四、参与意愿',
-        title: 'Q16. 请留下你的联系方式，方便我们后续沟通：',
+        title: 'Q16. 请留下你的联系方式',
         subtitle: '姓名/昵称',
         required: false,
+        condition: { question: 'interview_willingness', not: 'unlikely' },
+    },
+    {
+        id: 'contact_city',
+        type: 'single',
+        title: '',
+        subtitle: '你所在的城市是？',
+        required: false,
+        condition: { question: 'interview_willingness', not: 'unlikely' },
+        options: [
+            { value: 'shanghai', label: '上海' },
+            { value: 'other', label: '其他城市', custom: true },
+        ],
     },
     {
         id: 'contact_info',
         type: 'text',
         title: '',
-        subtitle: '钉钉/微信',
+        subtitle: '钉钉/微信（选填）',
         required: false,
+        condition: { question: 'interview_willingness', not: 'unlikely' },
     },
 ];
 
@@ -717,8 +732,16 @@ function isQuestionAnswered(questionId) {
     return true;
 }
 
+function isQuestionActive(q) {
+    if (!q.condition) return true;
+    const condAnswer = answers[q.condition.question];
+    if (q.condition.not && condAnswer === q.condition.not) return false;
+    if (q.condition.is && condAnswer !== q.condition.is) return false;
+    return true;
+}
+
 function getRequiredQuestions() {
-    return QUESTIONS.filter(q => q.type !== 'welcome' && q.required);
+    return QUESTIONS.filter(q => q.type !== 'welcome' && q.required && isQuestionActive(q));
 }
 
 function getTotalRequired() {
@@ -945,27 +968,32 @@ function goNext() {
         return;
     }
 
-    // Find next required question
-    const nextRequiredIdx = idx + 1;
-    if (nextRequiredIdx < required.length) {
-        currentQuestionIndex = QUESTIONS.indexOf(required[nextRequiredIdx]);
-        renderQuestion();
+    // Find next required + active question
+    for (let i = idx + 1; i < required.length; i++) {
+        if (isQuestionActive(required[i])) {
+            currentQuestionIndex = QUESTIONS.indexOf(required[i]);
+            renderQuestion();
+            return;
+        }
     }
+    // No more active questions — submit
+    submitSurvey();
 }
 
 function goPrev() {
     const q = getCurrentQuestion();
     if (!q || q.type === 'welcome') return;
 
-    // Find previous required question
-    const required = getRequiredQuestions();
-    const idx = required.findIndex(rq => rq.id === q.id);
-    if (idx > 0) {
-        currentQuestionIndex = QUESTIONS.indexOf(required[idx - 1]);
-    } else {
-        // Go back to welcome
-        currentQuestionIndex = 0;
+    // Find previous required + active question
+    for (let i = idx - 1; i >= 0; i--) {
+        if (isQuestionActive(required[i])) {
+            currentQuestionIndex = QUESTIONS.indexOf(required[i]);
+            renderQuestion();
+            return;
+        }
     }
+    // Go back to welcome
+    currentQuestionIndex = 0;
     renderQuestion();
 }
 
