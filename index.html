@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AiKen 风格偏好调研</title>
+    <style>
+        :root {
+            --bg: #000000;
+            --panel-bg: #0a0a0a;
+            --border: rgba(255, 255, 255, 0.08);
+            --text: #ffffff;
+            --text-muted: rgba(255, 255, 255, 0.55);
+            --text-dim: rgba(255, 255, 255, 0.35);
+            --accent: #ff9f43;
+            --accent-glow: rgba(255, 159, 67, 0.35);
+            --success: #2ecc71;
+            --radius: 10px;
+            --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--font);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .app { height: 100vh; display: flex; }
+
+        /* ---- Left: Image + Style Panel ---- */
+        .left-panel {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border);
+        }
+
+        .preview-area {
+            flex: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+            overflow: hidden;
+        }
+
+        .preview-area canvas {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .upload-placeholder {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: var(--text-dim);
+        }
+
+        .upload-placeholder svg {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 20px;
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        .upload-placeholder .upload-hint {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.25);
+            margin-top: 12px;
+        }
+
+        .upload-btn {
+            display: inline-block;
+            padding: 12px 28px;
+            border-radius: 8px;
+            border: 1px solid var(--accent);
+            background: rgba(255, 159, 67, 0.12);
+            color: var(--accent);
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: var(--font);
+            letter-spacing: 0.02em;
+        }
+
+        .upload-btn:hover {
+            background: rgba(255, 159, 67, 0.2);
+            box-shadow: 0 0 16px var(--accent-glow);
+        }
+
+        .style-strip {
+            height: 80px;
+            flex-shrink: 0;
+            background: var(--panel-bg);
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 16px;
+            gap: 10px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .style-strip::-webkit-scrollbar { display: none; }
+
+        .style-chip {
+            flex-shrink: 0;
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-dim);
+            text-align: center;
+            gap: 4px;
+            position: relative;
+        }
+
+        .style-chip:hover {
+            border-color: rgba(255, 255, 255, 0.18);
+            color: var(--text);
+        }
+
+        .style-chip.active {
+            border-color: var(--accent);
+            color: var(--accent);
+            box-shadow: 0 0 12px var(--accent-glow);
+        }
+
+        .style-chip .dot {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .style-chip .label {
+            line-height: 1.2;
+            max-width: 56px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* ---- Right: Survey Panel ---- */
+        .right-panel {
+            width: 420px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            background: var(--panel-bg);
+        }
+
+        .survey-header {
+            padding: 20px 28px 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .survey-header .step-info {
+            font-size: 12px;
+            color: var(--text-dim);
+            letter-spacing: 0.06em;
+        }
+
+        .survey-header .progress-bar {
+            width: 120px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .survey-header .progress-fill {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        .survey-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 28px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255,255,255,0.12) transparent;
+        }
+
+        .survey-body::-webkit-scrollbar { width: 5px; }
+        .survey-body::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.12);
+            border-radius: 3px;
+        }
+
+        .question-block {
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .question-label {
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            color: var(--accent);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+
+        .question-title {
+            font-size: 20px;
+            font-weight: 600;
+            line-height: 1.5;
+            margin-bottom: 24px;
+        }
+
+        .question-subtitle {
+            font-size: 13px;
+            color: var(--text-dim);
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-btn {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 18px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-align: left;
+            font-size: 15px;
+            font-family: var(--font);
+        }
+
+        .option-btn:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.18);
+        }
+
+        .option-btn.selected {
+            background: rgba(255, 159, 67, 0.1);
+            border-color: var(--accent);
+            box-shadow: 0 0 12px rgba(255, 159, 67, 0.15);
+        }
+
+        .option-radio {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.25);
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+        }
+
+        .option-btn.selected .option-radio {
+            border-color: var(--accent);
+            background: var(--accent);
+        }
+
+        .option-radio-inner {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #000;
+            opacity: 0;
+            transition: opacity 0.15s;
+        }
+
+        .option-btn.selected .option-radio-inner { opacity: 1; }
+
+        /* Checkbox style for multi-select */
+        .option-checkbox {
+            width: 22px;
+            height: 22px;
+            border-radius: 6px;
+            border: 2px solid rgba(255, 255, 255, 0.25);
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+        }
+
+        .option-btn.selected .option-checkbox {
+            border-color: var(--accent);
+            background: var(--accent);
+        }
+
+        .option-checkbox svg {
+            opacity: 0;
+            transition: opacity 0.15s;
+        }
+
+        .option-btn.selected .option-checkbox svg { opacity: 1; }
+
+        /* 1-5 rating */
+        .rating-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .rating-btn {
+            width: 52px;
+            height: 52px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-dim);
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: 600;
+            transition: all 0.15s;
+            font-family: var(--font);
+        }
+
+        .rating-btn:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            color: var(--text);
+        }
+
+        .rating-btn.selected {
+            border-color: var(--accent);
+            background: rgba(255, 159, 67, 0.15);
+            color: var(--accent);
+        }
+
+        .rating-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 11px;
+            color: var(--text-dim);
+            padding: 0 4px;
+        }
+
+        /* Textarea */
+        .text-input {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text);
+            font-size: 15px;
+            font-family: var(--font);
+            resize: vertical;
+            min-height: 100px;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+
+        .text-input:focus {
+            border-color: var(--accent);
+        }
+
+        .text-input::placeholder {
+            color: var(--text-dim);
+        }
+
+        /* Footer */
+        .survey-footer {
+            padding: 16px 28px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .btn {
+            padding: 12px 28px;
+            border-radius: 8px;
+            border: none;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: var(--font);
+            letter-spacing: 0.02em;
+        }
+
+        .btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .btn-prev {
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-prev:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+        }
+
+        .btn-next {
+            background: var(--accent);
+            color: #000;
+        }
+
+        .btn-next:hover:not(:disabled) {
+            background: #ffb366;
+            box-shadow: 0 0 16px var(--accent-glow);
+        }
+
+        .btn-submit {
+            background: var(--success);
+            color: #000;
+        }
+
+        .btn-submit:hover:not(:disabled) {
+            background: #3ddb84;
+        }
+
+        /* Completion screen */
+        .completion {
+            text-align: center;
+            padding: 60px 40px;
+        }
+
+        .completion svg {
+            width: 72px;
+            height: 72px;
+            color: var(--success);
+            margin-bottom: 24px;
+        }
+
+        .completion h2 {
+            font-size: 24px;
+            margin-bottom: 12px;
+        }
+
+        .completion p {
+            font-size: 15px;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        /* Already answered notice */
+        .answered-notice {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            font-size: 12px;
+            color: var(--text-dim);
+            margin-bottom: 20px;
+        }
+
+        .answered-notice svg {
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+            color: var(--text-dim);
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 24px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text);
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 900px) {
+            .app { flex-direction: column; }
+            .left-panel { width: 100%; height: 45%; }
+            .right-panel { width: 100%; height: 55%; }
+            .style-strip { height: 64px; }
+            .style-chip { width: 48px; height: 48px; }
+            .style-chip .dot { width: 18px; height: 18px; }
+            .style-chip .label { font-size: 8px; }
+            .question-title { font-size: 17px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app">
+    <!-- Left: Image Preview + Style Strip -->
+    <div class="left-panel">
+        <div class="preview-area" id="previewArea">
+            <canvas id="previewCanvas"></canvas>
+            <div class="upload-placeholder" id="uploadPlaceholder">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                    <polyline points="21 15 16 10 5 21"/>
+                </svg>
+                <button class="upload-btn" id="uploadBtnHint">上传你的照片</button>
+                <div class="upload-hint">支持 JPG / PNG / WebP</div>
+            </div>
+        </div>
+        <div class="style-strip" id="styleStrip"></div>
+        <input type="file" id="imageInput" accept="image/*" style="display:none">
+    </div>
+
+    <!-- Right: Survey -->
+    <div class="right-panel" id="rightPanel">
+        <div class="survey-header">
+            <span class="step-info" id="stepInfo">第 1 题 / 共 0 题</span>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width:0%"></div>
+            </div>
+        </div>
+        <div class="survey-body" id="surveyBody"></div>
+        <div class="survey-footer" id="surveyFooter">
+            <button class="btn btn-prev" id="btnPrev" disabled>← 上一题</button>
+            <button class="btn btn-next" id="btnNext" disabled>下一题 →</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!--
+  ============================================================
+  SURVEY CONFIG — Edit questions and styles below
+  ============================================================
+-->
+<script>
+// ===================== STYLE CONFIG =====================
+// Map each style to: { id, name, category, color (for chip dot), lutPath (relative to site root) }
+// The survey questions will loop through these styles for the per-style rating questions.
+const STYLES = [
+    { id: 'original',    name: '原图',      category: '原始', color: '#888888', lutPath: null },
+    { id: 'kodak-gold',  name: '浓郁美式',  category: '胶卷', color: '#f39c12', lutPath: 'core-styles/kodak-gold.cube' },
+    { id: 'fuji-c200',   name: '清新日系',  category: '胶卷', color: '#3498db', lutPath: 'core-styles/fuji-c200.cube' },
+    { id: 'ilford-hp5',  name: '经典黑白',  category: '胶卷', color: '#95a5a6', lutPath: 'core-styles/ilford-hp5.cube' },
+    { id: 'xpro',        name: '交叉冲洗',  category: '实验', color: '#e84393', lutPath: 'core-styles/xpro.cube' },
+    { id: 'cyanotype',   name: '传统蓝晒',  category: '实验', color: '#2980b9', lutPath: 'core-styles/cyanotype.cube' },
+    { id: 'cyberpunk',   name: '未来怀旧',  category: '实验', color: '#9b59b6', lutPath: 'core-styles/cyberpunk.cube' },
+];
+
+// ===================== QUESTION CONFIG =====================
+// Each question: { id, type, title, subtitle?, options?, required?, condition? }
+// type: 'single' | 'multi' | 'rating1-5' | 'text'
+// condition: optional function(answers) => boolean. If false, skip this question.
+// options: for single/multi: [{ value, label }]; for rating: not needed (always 1-5)
+
+const QUESTIONS = [
+    // --- Phase 1: Per-style rating (auto-generated from STYLES) ---
+    // These are generated dynamically below.
+
+    // --- Phase 2: Overall preference ---
+    {
+        id: 'favorite_single',
+        type: 'single',
+        title: '如果 AiKen 只能内置 <strong>1 种</strong> 默认风格，你选哪个？',
+        subtitle: '请回顾你在左侧预览区看到的效果，选出你最喜欢的那个。',
+        required: true,
+        options: [] // filled dynamically from STYLES (excluding 'original')
+    },
+    {
+        id: 'favorite_five',
+        type: 'multi',
+        title: '如果 AiKen 首发内置 <strong>5 种</strong> 风格，你希望是哪 5 种？',
+        subtitle: '请选择 5 个（不含原图）。',
+        required: true,
+        options: [], // filled dynamically
+        maxSelect: 5
+    },
+    {
+        id: 'never_use',
+        type: 'multi',
+        title: '有没有你 <strong>绝对不会用</strong> 的风格？',
+        subtitle: '可以多选，也可以选"没有"。',
+        required: true,
+        options: [], // filled dynamically + "没有"
+    },
+    {
+        id: 'direction',
+        type: 'single',
+        title: '你觉得自己更偏好哪个方向？',
+        required: true,
+        options: [
+            { value: 'traditional', label: '传统胶卷感（浓郁美式、清新日系、经典黑白）' },
+            { value: 'experimental', label: '艺术实验感（交叉冲洗、传统蓝晒、未来怀旧）' },
+            { value: 'both', label: '都喜欢，不分方向' },
+            { value: 'neither', label: '都不太喜欢' },
+        ]
+    },
+    {
+        id: 'monthly_new',
+        type: 'single',
+        title: '如果 AiKen 以后每月推出 1-2 个新风格，你会？',
+        required: true,
+        options: [
+            { value: 'excited', label: '非常期待，会主动关注和尝试' },
+            { value: 'interested', label: '有兴趣，偶尔看看' },
+            { value: 'neutral', label: '无所谓，够用就行' },
+            { value: 'unnecessary', label: '觉得没必要' },
+        ]
+    },
+    {
+        id: 'pay_willingness',
+        type: 'single',
+        title: '你愿意为额外的新风格付费吗？',
+        required: true,
+        options: [
+            { value: 'yes', label: '愿意，如果是我喜欢的风格' },
+            { value: 'cheap', label: '看价格，几块钱可以' },
+            { value: 'no', label: '不愿意，应该免费' },
+            { value: 'unsure', label: '不确定' },
+        ]
+    },
+    {
+        id: 'own_photo_diff',
+        type: 'text',
+        title: '用你自己的照片套用风格后，和平时看别人的滤镜样片相比，感受有什么不同？',
+        subtitle: '选填，但你的感受对我们很重要。',
+        required: false,
+    },
+    {
+        id: 'open_feedback',
+        type: 'text',
+        title: '还有什么想说的？',
+        subtitle: '任何建议、吐槽或感受都可以。选填。',
+        required: false,
+    },
+];
+
+// ===================== BUILD PER-STYLE QUESTIONS =====================
+// For each style (excluding 'original'), generate a rating + scene-fit question
+const PER_STYLE_QUESTIONS = [];
+STYLES.forEach((style, idx) => {
+    if (style.id === 'original') return;
+
+    PER_STYLE_QUESTIONS.push({
+        id: 'rating_' + style.id,
+        type: 'rating1-5',
+        title: '【' + style.name + '】你喜欢这个风格吗？',
+        subtitle: '请在左侧预览区查看"' + style.name + '"的效果，然后给出评分。<br>1 = 很不喜欢，5 = 非常喜欢',
+        styleId: style.id,
+        styleName: style.name,
+        required: true,
+    });
+
+    PER_STYLE_QUESTIONS.push({
+        id: 'scene_' + style.id,
+        type: 'multi',
+        title: '【' + style.name + '】你觉得这个风格适合拍什么？',
+        subtitle: '可以多选。',
+        styleId: style.id,
+        styleName: style.name,
+        required: true,
+        options: [
+            { value: 'portrait', label: '人像' },
+            { value: 'street', label: '街景 / 建筑' },
+            { value: 'still', label: '静物 / 食物' },
+            { value: 'night', label: '夜景' },
+            { value: 'none', label: '都不适合' },
+        ]
+    });
+
+    PER_STYLE_QUESTIONS.push({
+        id: 'intensity_' + style.id,
+        type: 'single',
+        title: '【' + style.name + '】你觉得这个风格的"浓度"如何？',
+        styleId: style.id,
+        styleName: style.name,
+        required: true,
+        options: [
+            { value: 'too_light', label: '太淡了，不够有特点' },
+            { value: 'just_right', label: '正好，就是这个味道' },
+            { value: 'too_strong', label: '太浓了，有点过了' },
+        ]
+    });
+});
+
+// Combine: per-style questions first, then overall questions
+const ALL_QUESTIONS = [
+    // Welcome / instruction
+    {
+        id: 'welcome',
+        type: 'welcome',
+        title: '欢迎参加 AiKen 风格偏好调研',
+        subtitle: `
+            <p>请先 <strong>上传一张你自己的照片</strong>（建议选择人像、街景或静物类照片），然后点击下方不同风格查看效果。</p>
+            <p>浏览完所有风格后，请逐题作答。每道题 <strong>必须回答才能继续</strong>，且提交后 <strong>不能返回修改</strong>。</p>
+            <p>整个流程大约需要 <strong>8-12 分钟</strong>。感谢你的参与！</p>
+        `,
+        required: false,
+    },
+    ...PER_STYLE_QUESTIONS,
+    ...QUESTIONS.filter(q => q.id !== 'favorite_single' && q.id !== 'favorite_five' && q.id !== 'never_use'),
+    // Put these after per-style so options are familiar
+    {
+        id: 'favorite_single',
+        type: 'single',
+        title: '如果 AiKen 只能内置 <strong>1 种</strong> 默认风格，你选哪个？',
+        subtitle: '请回顾你在左侧预览区看到的效果，选出你最喜欢的那个。',
+        required: true,
+        options: STYLES.filter(s => s.id !== 'original').map(s => ({ value: s.id, label: s.name })),
+    },
+    {
+        id: 'favorite_five',
+        type: 'multi',
+        title: '如果 AiKen 首发内置 <strong>5 种</strong> 风格，你希望是哪 5 种？',
+        subtitle: '请选择 5 个。',
+        required: true,
+        options: STYLES.filter(s => s.id !== 'original').map(s => ({ value: s.id, label: s.name })),
+        maxSelect: 5,
+    },
+    {
+        id: 'never_use',
+        type: 'multi',
+        title: '有没有你 <strong>绝对不会用</strong> 的风格？',
+        subtitle: '可以多选。',
+        required: true,
+        options: [
+            ...STYLES.filter(s => s.id !== 'original').map(s => ({ value: s.id, label: s.name })),
+            { value: 'none', label: '没有，都能接受' },
+        ],
+    },
+];
+</script>
+
+<!--
+  ============================================================
+  APPLICATION LOGIC — Do not edit below unless you know what you're doing
+  ============================================================
+-->
+<script>
+// ---- State ----
+let sourceImage = null;
+let currentStyleId = null;
+let currentQuestionIndex = 0;
+let answers = {};        // { questionId: value }
+let submittedQuestions = new Set(); // questions that have been answered and locked
+let hasImage = false;
+
+// ---- DOM refs ----
+const previewArea = document.getElementById('previewArea');
+const previewCanvas = document.getElementById('previewCanvas');
+const ctx = previewCanvas.getContext('2d', { willReadFrequently: true });
+const uploadPlaceholder = document.getElementById('uploadPlaceholder');
+const styleStrip = document.getElementById('styleStrip');
+const imageInput = document.getElementById('imageInput');
+const surveyBody = document.getElementById('surveyBody');
+const surveyFooter = document.getElementById('surveyFooter');
+const stepInfo = document.getElementById('stepInfo');
+const progressFill = document.getElementById('progressFill');
+const btnPrev = document.getElementById('btnPrev');
+const btnNext = document.getElementById('btnNext');
+const toast = document.getElementById('toast');
+
+// ---- LUT Engine (simplified, no external deps) ----
+let lutCache = {}; // { lutPath: { size, table } }
+
+async function fetchLutFile(path) {
+    const resp = await fetch(path);
+    if (!resp.ok) throw new Error('Failed to load: ' + path);
+    return await resp.text();
+}
+
+function parseCubeFile(text) {
+    text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').replace(/^\uFEFF/, '');
+    const lines = text.split('\n').map(l => l.trim());
+    let size = 0;
+    const values = [];
+    for (const line of lines) {
+        if (!line || line.startsWith('#') || line.startsWith('//')) continue;
+        const parts = line.split(/\s+/);
+        if (parts[0] === 'TITLE' || parts[0] === 'DOMAIN_MIN' || parts[0] === 'DOMAIN_MAX') continue;
+        if (parts[0] === 'LUT_3D_SIZE') { size = parseInt(parts[1]); continue; }
+        if (parts.length >= 3) {
+            const r = parseFloat(parts[0]), g = parseFloat(parts[1]), b = parseFloat(parts[2]);
+            if (!isNaN(r) && !isNaN(g) && !isNaN(b)) values.push(r, g, b);
+        }
+    }
+    if (!size || values.length !== size * size * size * 3) {
+        throw new Error('Invalid .cube file');
+    }
+    return { size, table: new Float32Array(values) };
+}
+
+function applyLUT(srcPixels, w, h, lut) {
+    const { size, table } = lut;
+    const maxIdx = size - 1;
+    const n = size * size;
+    const dst = new Uint8ClampedArray(srcPixels.length);
+    for (let i = 0; i < srcPixels.length; i += 4) {
+        const r = srcPixels[i] / 255, g = srcPixels[i+1] / 255, b = srcPixels[i+2] / 255, a = srcPixels[i+3];
+        const rf = Math.min(r * maxIdx, maxIdx), gf = Math.min(g * maxIdx, maxIdx), bf = Math.min(b * maxIdx, maxIdx);
+        const r0 = Math.floor(rf), g0 = Math.floor(gf), b0 = Math.floor(bf);
+        const r1 = Math.min(r0+1, maxIdx), g1 = Math.min(g0+1, maxIdx), b1 = Math.min(b0+1, maxIdx);
+        const dr = rf-r0, dg = gf-g0, db = bf-b0;
+        const idx = (b0*n + g0*size + r0)*3;
+        const i100 = (b0*n + g0*size + r1)*3, i010 = (b0*n + g1*size + r0)*3, i110 = (b0*n + g1*size + r1)*3;
+        const i001 = (b1*n + g0*size + r0)*3, i101 = (b1*n + g0*size + r1)*3, i011 = (b1*n + g1*size + r0)*3, i111 = (b1*n + g1*size + r1)*3;
+        for (let c = 0; c < 3; c++) {
+            const c00 = table[idx+c]*(1-dr) + table[i100+c]*dr;
+            const c01 = table[i001+c]*(1-dr) + table[i101+c]*dr;
+            const c10 = table[i010+c]*(1-dr) + table[i110+c]*dr;
+            const c11 = table[i011+c]*(1-dr) + table[i111+c]*dr;
+            const c0 = c00*(1-dg) + c10*dg, c1 = c01*(1-dg) + c11*dg;
+            dst[i+c] = Math.round(Math.max(0, Math.min(1, c0*(1-db) + c1*db)) * 255);
+        }
+        dst[i+3] = a;
+    }
+    return dst;
+}
+
+function renderPreview() {
+    if (!sourceImage) return;
+    const w = sourceImage.naturalWidth || sourceImage.width;
+    const h = sourceImage.naturalHeight || sourceImage.height;
+    previewCanvas.width = w;
+    previewCanvas.height = h;
+    ctx.drawImage(sourceImage, 0, 0, w, h);
+    const style = STYLES.find(s => s.id === currentStyleId);
+    if (style && style.lutPath) {
+        const lut = lutCache[style.lutPath];
+        if (lut) {
+            const imageData = ctx.getImageData(0, 0, w, h);
+            imageData.data.set(applyLUT(imageData.data, w, h, lut));
+            ctx.putImageData(imageData, 0, 0);
+        }
+    }
+}
+
+async function selectStyle(styleId) {
+    currentStyleId = styleId;
+    const style = STYLES.find(s => s.id === styleId);
+    if (!style) return;
+
+    // Load LUT if needed
+    if (style.lutPath && !lutCache[style.lutPath]) {
+        try {
+            const text = await fetchLutFile(style.lutPath);
+            lutCache[style.lutPath] = parseCubeFile(text);
+        } catch (e) {
+            console.warn('LUT load failed:', style.lutPath, e);
+            showToast('风格加载失败: ' + style.name);
+            return;
+        }
+    }
+
+    renderPreview();
+
+    // Update style strip UI
+    document.querySelectorAll('.style-chip').forEach(chip => {
+        chip.classList.toggle('active', chip.dataset.styleId === styleId);
+    });
+}
+
+function buildStyleStrip() {
+    styleStrip.innerHTML = '';
+    STYLES.forEach(style => {
+        const chip = document.createElement('div');
+        chip.className = 'style-chip';
+        chip.dataset.styleId = style.id;
+        chip.innerHTML = `
+            <div class="dot" style="background:${style.color}"></div>
+            <div class="label">${style.name}</div>
+        `;
+        chip.addEventListener('click', () => selectStyle(style.id));
+        styleStrip.appendChild(chip);
+    });
+}
+
+// ---- Image Upload ----
+previewArea.addEventListener('click', (e) => {
+    if (!hasImage) imageInput.click();
+});
+
+// Upload button inside placeholder
+const uploadBtnHint = document.getElementById('uploadBtnHint');
+if (uploadBtnHint) {
+    uploadBtnHint.addEventListener('click', (e) => {
+        e.stopPropagation();
+        imageInput.click();
+    });
+}
+
+previewArea.addEventListener('dragover', e => { e.preventDefault(); });
+previewArea.addEventListener('drop', e => {
+    e.preventDefault();
+    if (e.dataTransfer.files.length > 0) loadImageFile(e.dataTransfer.files[0]);
+});
+
+imageInput.addEventListener('change', e => {
+    if (e.target.files.length > 0) loadImageFile(e.target.files[0]);
+});
+
+function loadImageFile(file) {
+    if (!file || !file.type.startsWith('image/')) {
+        showToast('请选择有效的图片文件');
+        return;
+    }
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+            sourceImage = img;
+            hasImage = true;
+            uploadPlaceholder.style.display = 'none';
+            previewCanvas.style.display = 'block';
+            selectStyle('original');
+            updateQuestionUI();
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
+// ---- Survey Engine ----
+function getTotalQuestions() {
+    return ALL_QUESTIONS.filter(q => q.type !== 'welcome').length;
+}
+
+function getQuestionIndex(questionId) {
+    // Return the 1-based index among non-welcome questions
+    let count = 0;
+    for (const q of ALL_QUESTIONS) {
+        if (q.type === 'welcome') continue;
+        count++;
+        if (q.id === questionId) return count;
+    }
+    return 0;
+}
+
+function getCurrentQuestion() {
+    return ALL_QUESTIONS[currentQuestionIndex];
+}
+
+function isQuestionLocked(questionId) {
+    return submittedQuestions.has(questionId);
+}
+
+function getAnswer(questionId) {
+    return answers[questionId];
+}
+
+function updateProgress() {
+    const q = getCurrentQuestion();
+    if (!q || q.type === 'welcome') {
+        stepInfo.textContent = '';
+        progressFill.style.width = '0%';
+        return;
+    }
+    const idx = getQuestionIndex(q.id);
+    const total = getTotalQuestions();
+    stepInfo.textContent = '第 ' + idx + ' 题 / 共 ' + total + ' 题';
+    progressFill.style.width = ((idx / total) * 100) + '%';
+}
+
+function updateNavButtons() {
+    const q = getCurrentQuestion();
+    if (!q) return;
+
+    const isFirst = currentQuestionIndex === 0 || currentQuestionIndex === 1;
+    const isLast = currentQuestionIndex === ALL_QUESTIONS.length - 1;
+    const isLocked = isQuestionLocked(q.id);
+    const hasAnswer = getAnswer(q.id) !== undefined && getAnswer(q.id) !== null && getAnswer(q.id) !== '';
+
+    btnPrev.disabled = isFirst;
+    btnPrev.style.visibility = isFirst ? 'hidden' : 'visible';
+
+    if (isLast) {
+        btnNext.textContent = '提交 ✓';
+        btnNext.className = 'btn btn-submit';
+    } else {
+        btnNext.textContent = '下一题 →';
+        btnNext.className = 'btn btn-next';
+    }
+
+    if (q.type === 'welcome') {
+        btnNext.disabled = !hasImage;
+        btnNext.textContent = '开始答题 →';
+        return;
+    }
+
+    // If locked (already submitted), show "已回答" state
+    if (isLocked) {
+        btnNext.disabled = true;
+        btnNext.textContent = isLast ? '已提交' : '已回答 ✓';
+    } else if (q.required && !hasAnswer) {
+        btnNext.disabled = true;
+    } else {
+        btnNext.disabled = false;
+    }
+}
+
+function renderWelcome() {
+    const q = getCurrentQuestion();
+    surveyBody.innerHTML = `
+        <div class="question-block">
+            <div class="question-title">${q.title}</div>
+            <div class="question-subtitle">${q.subtitle}</div>
+            ${!hasImage ? '<p style="color:var(--accent);font-size:14px;margin-top:16px;">👆 请先在左侧上传你的照片</p>' : '<p style="color:var(--success);font-size:14px;margin-top:16px;">✅ 照片已上传，可以浏览风格后开始答题</p>'}
+        </div>
+    `;
+}
+
+function renderQuestion() {
+    const q = getCurrentQuestion();
+    if (!q || q.type === 'welcome') return;
+    const isLocked = isQuestionLocked(q.id);
+    const currentAnswer = getAnswer(q.id);
+
+    let html = '<div class="question-block">';
+
+    // Show locked notice
+    if (isLocked) {
+        html += `
+            <div class="answered-notice">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                你已回答过此题，答案已锁定，不可修改。
+            </div>
+        `;
+    }
+
+    // Style hint for per-style questions
+    if (q.styleName) {
+        const style = STYLES.find(s => s.id === q.styleId);
+        html += `<div class="question-label" style="color:${style ? style.color : 'var(--accent)'}">${q.styleName}</div>`;
+    }
+
+    html += `<div class="question-title">${q.title}</div>`;
+    if (q.subtitle) html += `<div class="question-subtitle">${q.subtitle}</div>`;
+
+    // Render based on type
+    if (q.type === 'single') {
+        html += '<div class="options-list">';
+        q.options.forEach(opt => {
+            const selected = currentAnswer === opt.value;
+            html += `
+                <button class="option-btn${selected ? ' selected' : ''}${isLocked ? '' : ''}"
+                        data-value="${opt.value}" ${isLocked ? 'disabled' : ''}>
+                    <div class="option-radio"><div class="option-radio-inner"></div></div>
+                    ${opt.label}
+                </button>
+            `;
+        });
+        html += '</div>';
+    } else if (q.type === 'multi') {
+        const selectedValues = Array.isArray(currentAnswer) ? currentAnswer : [];
+        html += '<div class="options-list">';
+        q.options.forEach(opt => {
+            const selected = selectedValues.includes(opt.value);
+            html += `
+                <button class="option-btn${selected ? ' selected' : ''}${isLocked ? '' : ''}"
+                        data-value="${opt.value}" data-multi="true" ${isLocked ? 'disabled' : ''}>
+                    <div class="option-checkbox">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                    ${opt.label}
+                </button>
+            `;
+        });
+        html += '</div>';
+    } else if (q.type === 'rating1-5') {
+        html += '<div class="rating-row">';
+        for (let i = 1; i <= 5; i++) {
+            html += `<button class="rating-btn${currentAnswer === i ? ' selected' : ''}"
+                            data-value="${i}" ${isLocked ? 'disabled' : ''}>${i}</button>`;
+        }
+        html += '</div>';
+        html += '<div class="rating-labels"><span>很不喜欢</span><span>非常喜欢</span></div>';
+    } else if (q.type === 'text') {
+        html += `<textarea class="text-input" placeholder="输入你的想法..." ${isLocked ? 'readonly' : ''}
+                         data-text="true">${currentAnswer || ''}</textarea>`;
+    }
+
+    html += '</div>';
+    surveyBody.innerHTML = html;
+
+    // Attach event listeners
+    if (!isLocked) {
+        surveyBody.querySelectorAll('.option-btn, .rating-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const value = this.dataset.value;
+                const isMulti = this.dataset.multi === 'true';
+                if (q.type === 'single' || q.type === 'rating1-5') {
+                    answers[q.id] = q.type === 'rating1-5' ? parseInt(value) : value;
+                } else if (q.type === 'multi') {
+                    let arr = Array.isArray(answers[q.id]) ? [...answers[q.id]] : [];
+                    // Handle "none" logic for scene questions
+                    if (value === 'none') {
+                        arr = ['none'];
+                    } else {
+                        arr = arr.filter(v => v !== 'none');
+                        if (q.maxSelect && arr.length >= q.maxSelect && !arr.includes(value)) {
+                            showToast('最多选择 ' + q.maxSelect + ' 项');
+                            return;
+                        }
+                        if (arr.includes(value)) {
+                            arr = arr.filter(v => v !== value);
+                        } else {
+                            arr.push(value);
+                        }
+                    }
+                    answers[q.id] = arr;
+                }
+                updateQuestionUI();
+            });
+        });
+
+        const textarea = surveyBody.querySelector('.text-input');
+        if (textarea) {
+            textarea.addEventListener('input', function() {
+                answers[q.id] = this.value;
+                updateNavButtons();
+            });
+        }
+    }
+}
+
+function renderCompletion() {
+    surveyBody.innerHTML = `
+        <div class="completion">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+            <h2>调研完成！</h2>
+            <p>感谢你的参与！你的反馈对我们非常重要。</p>
+            <p style="margin-top:16px;font-size:13px;color:var(--text-dim)">你可以关闭此页面了。</p>
+        </div>
+    `;
+    surveyFooter.innerHTML = '';
+}
+
+function updateQuestionUI() {
+    const q = getCurrentQuestion();
+    if (!q) {
+        renderCompletion();
+        return;
+    }
+    if (q.type === 'welcome') {
+        renderWelcome();
+    } else {
+        renderQuestion();
+    }
+    updateProgress();
+    updateNavButtons();
+}
+
+// ---- Navigation ----
+function goToQuestion(index) {
+    currentQuestionIndex = Math.max(0, Math.min(index, ALL_QUESTIONS.length - 1));
+    updateQuestionUI();
+    surveyBody.scrollTop = 0;
+}
+
+function goNext() {
+    const q = getCurrentQuestion();
+    if (!q) return;
+
+    if (q.type === 'welcome') {
+        goToQuestion(1);
+        return;
+    }
+
+    // If already locked, just move to next
+    if (isQuestionLocked(q.id)) {
+        goToQuestion(currentQuestionIndex + 1);
+        return;
+    }
+
+    // Validate required
+    const answer = getAnswer(q.id);
+    if (q.required && (answer === undefined || answer === null || answer === '' ||
+        (Array.isArray(answer) && answer.length === 0))) {
+        showToast('请先回答此题再继续');
+        return;
+    }
+
+    // Lock answer
+    submittedQuestions.add(q.id);
+
+    // Check if last question
+    if (currentQuestionIndex >= ALL_QUESTIONS.length - 1) {
+        // Submit
+        submitResults();
+        return;
+    }
+
+    // For per-style questions, auto-switch style
+    const nextQ = ALL_QUESTIONS[currentQuestionIndex + 1];
+    if (nextQ && nextQ.styleId && nextQ.styleId !== currentStyleId) {
+        selectStyle(nextQ.styleId);
+    }
+
+    goToQuestion(currentQuestionIndex + 1);
+}
+
+function goPrev() {
+    if (currentQuestionIndex > 0) {
+        const prevQ = ALL_QUESTIONS[currentQuestionIndex - 1];
+        if (prevQ && prevQ.styleId && prevQ.styleId !== currentStyleId) {
+            selectStyle(prevQ.styleId);
+        }
+        goToQuestion(currentQuestionIndex - 1);
+    }
+}
+
+function submitResults() {
+    // Collect all answers
+    const result = {
+        timestamp: new Date().toISOString(),
+        answers: {},
+    };
+    ALL_QUESTIONS.forEach(q => {
+        if (q.type === 'welcome') return;
+        result.answers[q.id] = getAnswer(q.id);
+    });
+
+    console.log('Survey results:', JSON.stringify(result, null, 2));
+
+    // Try to save to localStorage as backup
+    try {
+        const existing = JSON.parse(localStorage.getItem('aiken_style_survey_results') || '[]');
+        existing.push(result);
+        localStorage.setItem('aiken_style_survey_results', JSON.stringify(existing));
+    } catch(e) {}
+
+    // Show completion
+    currentQuestionIndex = ALL_QUESTIONS.length; // beyond last
+    updateQuestionUI();
+
+    // Also download as JSON file
+    const blob = new Blob([JSON.stringify(result, null, 2)], { type: 'application/json' });
+    const link = document.createElement('a');
+    link.download = 'aiken-survey-' + Date.now() + '.json';
+    link.href = URL.createObjectURL(blob);
+    link.click();
+
+    showToast('调研完成！结果已自动下载。感谢你的参与！');
+}
+
+// ---- Toast ----
+let toastTimer;
+function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+// ---- Init ----
+buildStyleStrip();
+
+// Start with welcome
+currentQuestionIndex = 0;
+updateQuestionUI();
+
+// Event listeners
+btnNext.addEventListener('click', goNext);
+btnPrev.addEventListener('click', goPrev);
+
+// Keyboard navigation
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !btnNext.disabled) {
+        e.preventDefault();
+        goNext();
+    }
+});
+</script>
+
+</body>
+</html>
