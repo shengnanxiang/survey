@@ -1330,11 +1330,16 @@ function updateNavButtons() {
         return;
     }
 
-    // If locked (already submitted), show "已回答" state
+    // If locked (already submitted), keep navigation normal — user can go back/forward
+    // but the answer content itself is locked via the UI
     if (isLocked) {
-        btnNext.disabled = true;
-        btnNext.textContent = isLast ? '已提交' : '已回答 ✓';
-    } else if (q.required && !hasAnswer) {
+        btnNext.disabled = false;
+        btnNext.textContent = isLast ? '提交 ✓' : '下一题 →';
+        if (isLast) btnNext.className = 'btn btn-submit';
+        return;
+    }
+
+    if (q.required && !hasAnswer) {
         btnNext.disabled = true;
     } else {
         btnNext.disabled = false;
