@@ -148,6 +148,12 @@
             box-shadow: 0 0 12px var(--accent-glow);
         }
 
+        .style-chip.disabled {
+            opacity: 0.25;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
         .style-chip .dot {
             width: 24px;
             height: 24px;
@@ -1044,8 +1050,27 @@ function buildStyleStrip() {
             <div class="dot" style="background:${style.color}"></div>
             <div class="label">${style.name}</div>
         `;
-        chip.addEventListener('click', () => selectStyle(style.id));
         styleStrip.appendChild(chip);
+    });
+    // Delegate click to the strip
+    styleStrip.onclick = function(e) {
+        const chip = e.target.closest('.style-chip');
+        if (!chip) return;
+        const id = chip.dataset.styleId;
+        if (!id || chip.classList.contains('disabled')) return;
+        selectStyle(id);
+    };
+}
+
+// Enable only specific styles (pass array of style ids, or null to enable all)
+function setEnabledStyles(allowedIds) {
+    document.querySelectorAll('.style-chip').forEach(chip => {
+        const id = chip.dataset.styleId;
+        if (allowedIds === null) {
+            chip.classList.remove('disabled');
+        } else {
+            chip.classList.toggle('disabled', !allowedIds.includes(id));
+        }
     });
 }
 
@@ -1092,6 +1117,12 @@ function loadImageFile(file) {
         img.src = e.target.result;
     };
     reader.readAsDataURL(file);
+}
+
+// Helper: check if a question is an overall comparison (all styles should be available)
+function isOverallQuestion(q) {
+    const overallIds = ['favorite_single', 'favorite_five', 'never_use'];
+    return overallIds.includes(q.id);
 }
 
 // ---- Survey Engine ----
@@ -1319,8 +1350,21 @@ function updateQuestionUI() {
         return;
     }
     if (q.type === 'welcome') {
+        // Welcome: only original available
+        setEnabledStyles(['original']);
         renderWelcome();
     } else {
+        // Determine allowed styles based on question type
+        if (q.styleId) {
+            // Per-style question: only original + this style
+            setEnabledStyles(['original', q.styleId]);
+        } else if (isOverallQuestion(q)) {
+            // Overall comparison questions: all styles available
+            setEnabledStyles(null);
+        } else {
+            // Other non-style questions (direction, monthly, pay, text): all available
+            setEnabledStyles(null);
+        }
         renderQuestion();
     }
     updateProgress();
