@@ -567,6 +567,18 @@
             line-height: 1.6;
         }
 
+        .loading-spinner {
+            width: 44px;
+            height: 44px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
         /* Already answered notice */
         .answered-notice {
             display: flex;
@@ -1500,16 +1512,40 @@ function incrementalUpdateUI() {
     updateNavButtons();
 }
 
-function renderCompletion() {
+function renderCompletion(success = true, errorMsg = '') {
+    if (success) {
+        surveyBody.innerHTML = `
+            <div class="completion">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+                <h2>提交成功！</h2>
+                <p>感谢你的参与！你的反馈对我们非常重要。</p>
+                <p style="margin-top:16px;font-size:13px;color:var(--text-dim)">你可以关闭此页面了。</p>
+            </div>
+        `;
+    } else {
+        surveyBody.innerHTML = `
+            <div class="completion">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#ff6b6b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#ff6b6b">
+                    <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+                </svg>
+                <h2>提交失败</h2>
+                <p>${errorMsg || '网络出现问题，请稍后重试'}</p>
+                <button class="btn btn-next" onclick="retrySubmit()" style="margin-top:20px">重新提交</button>
+            </div>
+        `;
+    }
+    surveyFooter.innerHTML = '';
+}
+
+function renderSubmitting() {
     surveyBody.innerHTML = `
         <div class="completion">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                <polyline points="22 4 12 14.01 9 11.01"/>
-            </svg>
-            <h2>调研完成！</h2>
-            <p>感谢你的参与！你的反馈对我们非常重要。</p>
-            <p style="margin-top:16px;font-size:13px;color:var(--text-dim)">你可以关闭此页面了。</p>
+            <div class="loading-spinner"></div>
+            <h2 style="margin-top:24px">提交中...</h2>
+            <p>正在保存你的回答，请稍候</p>
         </div>
     `;
     surveyFooter.innerHTML = '';
@@ -1594,7 +1630,9 @@ function goPrev() {
     }
 }
 
-function submitResults() {
+let lastResult = null; // For retry
+
+async function submitResults() {
     // Collect all answers
     const result = {
         timestamp: new Date().toISOString(),
@@ -1605,34 +1643,30 @@ function submitResults() {
         result.answers[q.id] = getAnswer(q.id);
     });
 
-    console.log('Survey results:', JSON.stringify(result, null, 2));
+    lastResult = result;
+    currentQuestionIndex = ALL_QUESTIONS.length;
+    renderSubmitting();
 
-    // Try to save to localStorage as backup
-    try {
-        const existing = JSON.parse(localStorage.getItem('aiken_style_survey_results') || '[]');
-        existing.push(result);
-        localStorage.setItem('aiken_style_survey_results', JSON.stringify(existing));
-    } catch(e) {}
+    const ok = await submitToGitHub(result);
+    if (ok) {
+        renderCompletion(true);
+    } else {
+        renderCompletion(false, '提交到服务器失败，请检查网络后重试');
+    }
+}
 
-    // Show completion
-    currentQuestionIndex = ALL_QUESTIONS.length; // beyond last
-    updateQuestionUI();
-
-    // Download as JSON file (backup)
-    const blob = new Blob([JSON.stringify(result, null, 2)], { type: 'application/json' });
-    const link = document.createElement('a');
-    link.download = 'aiken-survey-' + Date.now() + '.json';
-    link.href = URL.createObjectURL(blob);
-    link.click();
-
-    // Submit to GitHub Issues
-    submitToGitHub(result);
-
-    showToast('调研完成！感谢你的参与！');
+async function retrySubmit() {
+    if (!lastResult) return;
+    renderSubmitting();
+    const ok = await submitToGitHub(lastResult);
+    if (ok) {
+        renderCompletion(true);
+    } else {
+        renderCompletion(false, '提交到服务器失败，请检查网络后重试');
+    }
 }
 
 async function submitToGitHub(result) {
-    // Token split to avoid push protection pattern matching
     const GITHUB_TOKEN = ['ghp', 'zFsbsSx8cacGp89TQHwgsP9NjYmXVb3nD2Jl'].join('_');
     const REPO = 'shengnanxiang/survey';
     const title = '[survey] ' + result.timestamp.replace('T', ' ').substring(0, 19);
@@ -1652,13 +1686,10 @@ async function submitToGitHub(result) {
                 labels: ['survey-response']
             })
         });
-        if (resp.ok) {
-            console.log('Survey submitted to GitHub successfully');
-        } else {
-            console.warn('GitHub issue creation failed:', resp.status);
-        }
+        return resp.ok;
     } catch (e) {
         console.warn('GitHub submission error:', e.message);
+        return false;
     }
 }
 

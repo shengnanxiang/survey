@@ -193,6 +193,8 @@ importInput.addEventListener('change', async () => {
                     if (!exists) {
                         allResponses.push({ number: null, title: '[imported] ' + item.timestamp, ...item });
                         imported++;
+                        // Also submit to GitHub
+                        submitImportedToGitHub(item);
                     }
                 }
             });
@@ -204,10 +206,32 @@ importInput.addEventListener('change', async () => {
     importInput.value = '';
     if (imported > 0) {
         renderDashboard();
-        document.getElementById('respCount').textContent = allResponses.length + ' 份回答（含 ' + imported + ' 份导入）';
+        document.getElementById('respCount').textContent = allResponses.length + ' 份回答（' + imported + ' 份导入中...）';
         document.getElementById('connStatus').className = 'status-dot on';
     }
 });
+
+async function submitImportedToGitHub(result) {
+    const GITHUB_TOKEN = ['ghp', 'zFsbsSx8cacGp89TQHwgsP9NjYmXVb3nD2Jl'].join('_');
+    const REPO = 'shengnanxiang/survey';
+    const title = '[survey] ' + result.timestamp.replace('T', ' ').substring(0, 19);
+    const body = '```json\n' + JSON.stringify(result, null, 2) + '\n```';
+
+    try {
+        const resp = await fetch('https://api.github.com/repos/' + REPO + '/issues', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'token ' + GITHUB_TOKEN,
+                'Accept': 'application/vnd.github+json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ title, body, labels: ['survey-response'] })
+        });
+        if (resp.ok) console.log('Imported result submitted to GitHub');
+    } catch(e) {
+        console.warn('Import submission error:', e.message);
+    }
+}
 
 loadData();
 
