@@ -1495,14 +1495,14 @@ function updateQuestionUI() {
     if (q.type === 'welcome') {
         // Welcome: only original available
         setEnabledStyles(['original']);
-        selectStyle('original');
+        if (currentStyleId !== 'original') selectStyle('original');
         renderWelcome();
     } else {
         // Determine allowed styles based on question type
         if (q.styleId) {
             // Per-style question: only original + this style
             setEnabledStyles(['original', q.styleId]);
-            selectStyle(q.styleId);
+            if (currentStyleId !== q.styleId) selectStyle(q.styleId);
         } else if (isOverallQuestion(q)) {
             // Overall comparison questions: all styles available
             setEnabledStyles(null);
