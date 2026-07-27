@@ -570,7 +570,7 @@ function escapeHtml(s) { return String(s||'').replace(/[&<>"']/g, m => ({'&':'&a
 // ============================================================
 function renderRecommendation() {
     const batch1 = ['闪电', '张子璟', '刘伟钢', '雷锋', '李雨露', '王莉'];
-    const batch2 = ['冯洁', '宋秋平', '段海波', '朱语婷', '卢华山', '伍英洁'];
+    const batch2 = ['冯洁', '宋秋平', '朱语婷', '伍英洁', '王雅岚', '顾魏怡'];
     const allNames = [...batch1, ...batch2];
     const lookup = {};
     SURVEY_DATA.forEach(r => { if (r.name) lookup[r.name] = r; });
@@ -616,7 +616,7 @@ function renderRecommendation() {
     html += `<tr><td>年龄</td><td>${ageGroups['18-25岁']}人 18-25岁 / ${ageGroups['26-35岁']}人 26-35岁 / ${ageGroups['36-45岁']}人 36-45岁</td></tr>`;
     html += `<tr><td>性别</td><td>${genders['男']}男 / ${genders['女']}女</td></tr>`;
     html += `<tr><td>分组覆盖</td><td>G1 胶片好奇者 ${gCounts['G1']}人 · G2 胶卷/拍立得经历 ${gCounts['G2']}人 · G3 潮玩购买者 ${gCounts['G3']}人</td></tr>`;
-    html += `<tr><td>AiKen 态度</td><td>正面 ${attPos}人 · 负面 ${attNeg}人（含持负面态度的真实用户视角）</td></tr>`;
+    html += `<tr><td>AiKen 态度</td><td>正面 ${attPos}人 · 负面 ${attNeg}人（重点覆盖年轻目标用户中的负面态度，以理解产品门槛与转化可能）</td></tr>`;
     html += `<tr><td>访谈意愿</td><td>很想参加 ${wYes}人 · 看具体时间 ${wMaybe}人</td></tr>`;
     html += `</tbody></table></div>`;
 
@@ -664,12 +664,18 @@ function renderRecommendCards(names, lookup, batch) {
 
 function getRecommendReason(name, r) {
     const reasons = {
-        '闪电': '年轻潮玩全装备用户，胶卷+CCD+运动相机，AiKen 高度认同，小红书活跃，是目标用户画像典范',
+        '闪电': '年轻潮玩全装备用户，胶卷+CCD+运动相机，AiKen 高度认同，小红书活跃，目标用户画像典范',
         '张子璟': '唯一 G1+G2+G3 三星全中，胶片好奇+拍立得用户+潮玩购买，视角最全面',
         '刘伟钢': 'G1 胶片好奇者代表，年轻男性，专业相机用户，用滤镜，仪式感高度吻合',
         '雷锋': 'G1+G3 独特组合，胶片好奇+CCD 购买者，大龄男性视角，AiKen 态度积极',
         '李雨露': '纯 G2 用户，只用过胶卷已不用，态度温和好奇，代表"曾经用过"的大众群体',
-        '王莉': 'G2+G3 但对 AiKen 觉得麻烦——关键反差视角，帮助理解产品疑虑点',
+        '王莉': '🔴 G2+G3 但对 AiKen 觉得麻烦——用过滤镜+买过拍立得却仍有顾虑，理解产品门槛的关键视角',
+        '冯洁': '年轻硬核玩家，5种设备全有，胶卷+拍立得都在用，AiKen 态度积极',
+        '宋秋平': 'CCD 购买者但从未用滤镜，经常觉得手机不够，有需求但行为矛盾，值得深挖',
+        '朱语婷': '🔴 18-25岁 G2+G3 重度用户却觉得麻烦——胶卷+拍立得+CCD全在用，仪式感吻合但概念不买单，核心反差',
+        '伍英洁': '🔴 G1 胶片好奇+专业相机用户，经常觉得手机不够，但对 AiKen 觉得麻烦——需求存在但概念未打动',
+        '王雅岚': '🔴 18-25岁 G3 潮玩购买者，胶片+拍立得都好奇但从未用过，仪式感吻合但对 AiKen 觉得麻烦——潜在可转化',
+        '顾魏怡': '🔴 18-25岁 G2，认为"拍照不需要仪式感"——最极致的负面态度，验证产品是否可能打动纯实用主义者',
     };
     return reasons[name] || '';
 }
