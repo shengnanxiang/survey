@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AiKen 新品调研 · 洞察报告</title>
+<style>
+:root {
+    --bg: #0a0e1a; --card: #111827; --border: #1e293b;
+    --text: #f1f5f9; --text-soft: #94a3b8; --text-muted: #64748b;
+    --accent: #f59e0b; --accent2: #f97316; --blue: #3b82f6;
+    --green: #10b981; --purple: #8b5cf6; --pink: #ec4899;
+    --radius: 16px;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background: var(--bg); color: var(--text); font-family: var(--font); line-height: 1.7; -webkit-font-smoothing: antialiased; }
+
+/* Hero */
+.hero {
+    text-align: center; padding: 80px 28px 60px;
+    background: radial-gradient(ellipse 80% 60% at 50% 20%, rgba(245,158,11,0.08), transparent);
+    border-bottom: 1px solid var(--border);
+}
+.hero .tag { display:inline-block; padding:4px 14px; border-radius:20px; background:rgba(245,158,11,0.15); color:var(--accent); font-size:12px; font-weight:600; letter-spacing:0.06em; margin-bottom:20px; }
+.hero h1 { font-size: clamp(32px, 5vw, 52px); font-weight: 800; letter-spacing: -0.02em; margin-bottom: 16px; }
+.hero h1 span { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero .subtitle { font-size: 17px; color: var(--text-soft); max-width: 600px; margin: 0 auto 24px; }
+.hero .meta { font-size: 13px; color: var(--text-muted); }
+
+/* Container */
+.container { max-width: 900px; margin: 0 auto; padding: 0 28px; }
+
+/* Section */
+.section { padding: 56px 0; }
+.section + .section { border-top: 1px solid var(--border); }
+.section-header { margin-bottom: 32px; }
+.section-number { font-size: 12px; font-weight: 700; color: var(--accent); letter-spacing: 0.08em; margin-bottom: 8px; }
+.section-title { font-size: 26px; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 8px; }
+.section-desc { font-size: 15px; color: var(--text-soft); }
+
+/* Big stat */
+.big-stat { text-align: center; padding: 32px 0; }
+.big-stat .number { font-size: clamp(48px, 8vw, 72px); font-weight: 800; letter-spacing: -0.03em; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1; }
+.big-stat .label { font-size: 15px; color: var(--text-soft); margin-top: 8px; }
+
+/* Stat grid */
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin: 28px 0; }
+.stat-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; text-align: center; }
+.stat-card .num { font-size: 36px; font-weight: 800; line-height: 1; }
+.stat-card .num.accent { color: var(--accent); }
+.stat-card .num.green { color: var(--green); }
+.stat-card .num.blue { color: var(--blue); }
+.stat-card .num.purple { color: var(--purple); }
+.stat-card .lbl { font-size: 13px; color: var(--text-muted); margin-top: 8px; }
+
+/* Insight block */
+.insight-block { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 32px; margin-bottom: 20px; }
+.insight-block .ib-label { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; color: var(--accent); margin-bottom: 8px; text-transform: uppercase; }
+.insight-block h3 { font-size: 20px; font-weight: 700; margin-bottom: 12px; }
+.insight-block p { font-size: 14px; color: var(--text-soft); line-height: 1.8; }
+.insight-block .highlight { color: var(--accent); font-weight: 600; }
+
+/* Bar mini */
+.bar-mini { display: flex; align-items: center; gap: 12px; margin: 8px 0; }
+.bar-mini .bm-label { width: 100px; text-align: right; font-size: 13px; color: var(--text-soft); flex-shrink: 0; }
+.bar-mini .bm-track { flex: 1; height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; }
+.bar-mini .bm-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+.bar-mini .bm-val { font-size: 12px; color: var(--text-muted); width: 48px; flex-shrink: 0; }
+
+/* Quote */
+.quote-block { border-left: 3px solid var(--accent); padding: 16px 24px; margin: 24px 0; background: rgba(245,158,11,0.04); border-radius: 0 var(--radius) var(--radius) 0; }
+.quote-block p { font-size: 16px; font-style: italic; color: var(--text-soft); }
+
+/* Cross insight grid */
+.cross-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 600px) { .cross-grid { grid-template-columns: 1fr; } }
+.cross-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; }
+.cross-card .cc-num { font-size: 28px; font-weight: 800; margin-bottom: 4px; }
+.cross-card .cc-num.green { color: var(--green); }
+.cross-card .cc-num.blue { color: var(--blue); }
+.cross-card .cc-num.purple { color: var(--purple); }
+.cross-card .cc-desc { font-size: 13px; color: var(--text-soft); line-height: 1.6; }
+
+/* Conclusion */
+.conclusion { background: linear-gradient(135deg, rgba(245,158,11,0.08), rgba(139,92,246,0.08)); border: 1px solid rgba(245,158,11,0.2); border-radius: var(--radius); padding: 36px; margin-top: 16px; }
+.conclusion h3 { font-size: 22px; font-weight: 700; margin-bottom: 16px; }
+.conclusion ul { list-style: none; }
+.conclusion ul li { padding: 8px 0; font-size: 14px; color: var(--text-soft); }
+.conclusion ul li::before { content: '✦ '; color: var(--accent); }
+
+/* Footer */
+.footer { text-align: center; padding: 48px 28px; border-top: 1px solid var(--border); }
+.footer p { font-size: 12px; color: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<!-- Hero -->
+<div class="hero">
+    <div class="tag">AiKen 新品调研 · 洞察报告</div>
+    <h1>当拍照<span>少了点感觉</span></h1>
+    <p class="subtitle">56 份真实用户问卷揭示：市场对一台"反效率"相机存在真实渴望</p>
+    <p class="meta">2025 年 · 样本覆盖 18-45+ 岁 · 男性 61% / 女性 39%</p>
+</div>
+
+<!-- Section 1: The Pain Point -->
+<div class="container"><div class="section">
+    <div class="section-header">
+        <div class="section-number">洞察一</div>
+        <div class="section-title">手机拍照"太方便"成了一个问题</div>
+        <div class="section-desc">当所有人都用手机拍照时，差异化体验的需求反而浮出水面。</div>
+    </div>
+
+    <div class="stat-grid">
+        <div class="stat-card">
+            <div class="num accent">66%</div>
+            <div class="lbl">至少偶尔觉得手机拍照<br>"少了点感觉"</div>
+        </div>
+        <div class="stat-card">
+            <div class="num accent">27%</div>
+            <div class="lbl">经常有这种感觉<br>——这是核心种子用户群</div>
+        </div>
+        <div class="stat-card">
+            <div class="num green">38%</div>
+            <div class="lbl">对胶卷相机没用过<br>但"挺好奇的"</div>
+        </div>
+        <div class="stat-card">
+            <div class="num blue">61%</div>
+            <div class="lbl">正在使用滤镜/<br>胶片模拟 App</div>
+        </div>
+    </div>
+
+    <div class="insight-block">
+        <div class="ib-label">💡 关键发现</div>
+        <h3>不是小众需求，是未被满足的大众情绪</h3>
+        <p>
+            在胶片好奇者中，<span class="highlight">71% 同时表示手机拍照"少了点感觉"</span>。
+            这指向一个清晰的用户画像：对胶卷文化有好感，但从未真正入门——他们需要的不是一台传统胶卷相机，而是一个"低门槛的胶卷体验替代品"。
+            同时，61% 的用户已经在使用滤镜 App（DazzCam、NOMO、VSCO 等），说明"模拟胶片感"是一个已被验证的行为，而非需要从零教育的需求。
+        </p>
+    </div>
+</div></div>
+
+<!-- Section 2: AiKen Concept -->
+<div class="container"><div class="section">
+    <div class="section-header">
+        <div class="section-number">洞察二</div>
+        <div class="section-title">AiKen 概念验证：近半数用户态度正面</div>
+        <div class="section-desc">"没有屏幕、过片动作、拍完一卷才能看"——这个看似"反人类"的设计，并没有吓跑用户。</div>
+    </div>
+
+    <div class="big-stat">
+        <div class="number">45%</div>
+        <div class="label">对 AiKen 概念持正面态度（"想试试" 14% + "好奇但不确定" 30%）</div>
+    </div>
+
+    <div class="bar-mini"><div class="bm-label">很有意思，想试试</div><div class="bm-track"><div class="bm-fill" style="width:30%"></div></div><div class="bm-val">8人 14%</div></div>
+    <div class="bar-mini"><div class="bm-label">有点好奇</div><div class="bm-track"><div class="bm-fill" style="width:65%"></div></div><div class="bm-val">17人 30%</div></div>
+    <div class="bar-mini"><div class="bm-label">听起来有点麻烦</div><div class="bm-track"><div class="bm-fill" style="width:95%"></div></div><div class="bm-val">25人 45%</div></div>
+    <div class="bar-mini"><div class="bm-label">完全不感兴趣</div><div class="bm-track"><div class="bm-fill" style="width:23%"></div></div><div class="bm-val">6人 11%</div></div>
+
+    <div class="insight-block" style="margin-top:28px;">
+        <div class="ib-label">💡 关键发现</div>
+        <h3>"好奇但不确定"是最大的机会池</h3>
+        <p>
+            30% 的用户处于"有点好奇，但不确定自己会不会用"——这个中间态是 AiKen 需要重点攻克的人群。
+            值得注意的是，在<span class="highlight">潮玩购买者（G3）中，正面态度高达 70%</span>。
+            这说明：越是接触过 CCD、潮玩相机、拍立得等"非常规"拍摄设备的用户，越能理解 AiKen 的价值主张。
+        </p>
+    </div>
+</div></div>
+
+<!-- Section 3: Ritual -->
+<div class="container"><div class="section">
+    <div class="section-header">
+        <div class="section-number">洞察三</div>
+        <div class="section-title">"仪式感"需求与 AiKen 设计哲学高度吻合</div>
+        <div class="section-desc">用户对拍照仪式感的主流理解，恰好就是 AiKen 试图创造的核心体验。</div>
+    </div>
+
+    <div class="stat-grid">
+        <div class="stat-card">
+            <div class="num purple">46%</div>
+            <div class="lbl">认为仪式感是"每次快门<br>都经过思考"（胶卷式）</div>
+        </div>
+        <div class="stat-card">
+            <div class="num green">64%</div>
+            <div class="lbl">正面态度用户中<br>认同胶卷式仪式感</div>
+        </div>
+    </div>
+
+    <div class="cross-grid" style="margin-top:20px;">
+        <div class="cross-card">
+            <div class="cc-num green">46%</div>
+            <div class="cc-desc">每次快门都经过思考<br><span style="color:var(--text-muted)">← AiKen "过片+无屏" 设计直指此需求</span></div>
+        </div>
+        <div class="cross-card">
+            <div class="cc-num blue">23%</div>
+            <div class="cc-desc">精心构图、调参数<br><span style="color:var(--text-muted)">← 专业相��用户群体</span></div>
+        </div>
+        <div class="cross-card">
+            <div class="cc-num">11%</div>
+            <div class="cc-desc">拍完立刻拿到实体照片<br><span style="color:var(--text-muted)">← 拍立得用户群体</span></div>
+        </div>
+        <div class="cross-card">
+            <div class="cc-num">16%</div>
+            <div class="cc-desc">拍照不需要仪式感<br><span style="color:var(--text-muted)">← 非目标用户，存在但不影响核心定位</span></div>
+        </div>
+    </div>
+
+    <div class="insight-block" style="margin-top:20px;">
+        <div class="ib-label">💡 关键发现</div>
+        <h3>AiKen 不是"创造"需求，而是"满足"一个已经存在的渴望</h3>
+        <p>
+            46% 的用户天然认为拍照仪式感 = "每次快门经过思考"，这与 AiKen 的过片机制、无屏幕设计、一卷一风格的产品理念<span class="highlight">完全同构</span>。
+            在 18-35 岁核心目标人群中，这一比例达到 <span class="highlight">51%</span>。这意味着 AiKen 不需要教育用户"什么是仪式感"——用户已经懂了，只是市场上没有一个产品把这个体验做出来。
+        </p>
+    </div>
+</div></div>
+
+<!-- Section 4: Scenes -->
+<div class="container"><div class="section">
+    <div class="section-header">
+        <div class="section-number">洞察四</div>
+        <div class="section-title">"慢场景"是 AiKen 的天然使用场景</div>
+        <div class="section-desc">用户心目中值得"不赶时间、慢慢拍"的场景，与 AiKen 的产品节奏完美契合。</div>
+    </div>
+
+    <div style="margin-bottom:12px;font-size:13px;color:var(--text-muted);">用户选择的"值得慢慢拍"场景 Top 5：</div>
+    <div class="bar-mini"><div class="bm-label">旅行中的特别时刻</div><div class="bm-track"><div class="bm-fill" style="width:100%"></div></div><div class="bm-val">75%</div></div>
+    <div class="bar-mini"><div class="bm-label">户外徒步 / 露营</div><div class="bm-track"><div class="bm-fill" style="width:64%"></div></div><div class="bm-val">48%</div></div>
+    <div class="bar-mini"><div class="bm-label">City Walk / 探店</div><div class="bm-track"><div class="bm-fill" style="width:48%"></div></div><div class="bm-val">36%</div></div>
+    <div class="bar-mini"><div class="bm-label">一个人逛街</div><div class="bm-track"><div class="bm-fill" style="width:48%"></div></div><div class="bm-val">36%</div></div>
+    <div class="bar-mini"><div class="bm-label">朋友聚会 / 派对</div><div class="bm-track"><div class="bm-fill" style="width:45%"></div></div><div class="bm-val">34%</div></div>
+
+    <div class="insight-block" style="margin-top:28px;">
+        <div class="ib-label">💡 关键发现</div>
+        <h3>场景需求验证了"慢"的价值</h3>
+        <p>
+            排名最高的场景——旅行、户外、City Walk、看展——都是用户<span class="highlight">主动选择"慢下来"的时刻</span>。
+            在这些场景中，用户不追求拍照效率，而是享受拍照过程本身。
+            这与 AiKen "过片后才能拍下一张、拍完一卷才能看照片"的慢节奏设计完全一致——<span class="highlight">不是产品让用户慢下来，而是用户在这些场景中本来就愿意慢下来</span>。
+        </p>
+    </div>
+</div></div>
+
+<!-- Section 5: Target User -->
+<div class="container"><div class="section">
+    <div class="section-header">
+        <div class="section-number">洞察五</div>
+        <div class="section-title">核心目标用户画像已清晰浮现</div>
+        <div class="section-desc">通过 G1/G2/G3 三层分组，我们识别出了 AiKen 最具潜力的早期用户群。</div>
+    </div>
+
+    <div class="stat-grid">
+        <div class="stat-card">
+            <div class="num green">11人</div>
+            <div class="lbl">G1 胶片好奇者<br>没用过胶卷但好奇 + 用滤镜</div>
+        </div>
+        <div class="stat-card">
+            <div class="num blue">37人</div>
+            <div class="lbl">G2 胶卷/拍立得经历者<br>正在用或曾经用过</div>
+        </div>
+        <div class="stat-card">
+            <div class="num purple">20人</div>
+            <div class="lbl">G3 潮玩尝鲜者<br>购买过 CCD/潮玩相机/拍立得</div>
+        </div>
+    </div>
+
+    <div class="cross-grid">
+        <div class="cross-card">
+            <div class="cc-num green">70%</div>
+            <div class="cc-desc"><strong>G3 潮玩购买者</strong>中对 AiKen 持正面态度——越是接触过"非常规"相机的人，越认可 AiKen 的价值</div>
+        </div>
+        <div class="cross-card">
+            <div class="cc-num blue">69%</div>
+            <div class="cc-desc"><strong>18-35 岁核心目标</strong>中至少偶尔觉得手机拍照少了点感觉——年轻用户是痛点最强烈的群体</div>
+        </div>
+        <div class="cross-card">
+            <div class="cc-num purple">51%</div>
+            <div class="cc-desc"><strong>18-35 岁</strong>认同胶卷式仪式感——与 AiKen 设计哲学天然对齐</div>
+        </div>
+        <div class="cross-card">
+            <div class="cc-num accent">36%</div>
+            <div class="cc-desc"><strong>全样本</strong>购买过至少一款潮玩拍摄产品（CCD/拍立得/潮玩相机）——市场已有尝鲜行为</div>
+        </div>
+    </div>
+</div></div>
+
+<!-- Conclusion -->
+<div class="container"><div class="section">
+    <div class="section-header">
+        <div class="section-number">总结</div>
+        <div class="section-title">AiKen 的市场机会：数据怎么说</div>
+    </div>
+
+    <div class="conclusion">
+        <h3>四个信号，一个结论</h3>
+        <ul>
+            <li><strong>信号一：需求真实存在。</strong> 66% 的用户至少偶尔觉得手机拍照"少了点感觉"，27% 经常如此。这不是一个小众情绪。</li>
+            <li><strong>信号二：概念已被接受。</strong> 45% 对 AiKen 概念持正面态度，在潮玩购买者中高达 70%。"反效率"设计没有吓跑目标用户。</li>
+            <li><strong>信号三：体验与需求对齐。</strong> 46% 用户天然认同胶卷式仪式感，在 18-35 岁中达 51%。AiKen 不需要教育市场——市场已经在等待这样的产品。</li>
+            <li><strong>信号四：场景自然匹配。</strong> 旅行、户外、City Walk 等"慢场景"是用户主动选择慢下来的时刻，与 AiKen 的产品节奏无缝衔接。</li>
+        </ul>
+        <p style="margin-top:20px;font-size:15px;color:var(--text);font-weight:600;">
+            结论：AiKen 切中的不是一个小众需求，而是一个<span style="color:var(--accent);">已被感知但未被满足</span>的市场空白。用户的"胶卷好奇"、对"手机太普通"的不满、对"仪式感"的向往——这三个情绪的交汇点，就是 AiKen 的位置。
+        </p>
+    </div>
+</div></div>
+
+<!-- Footer -->
+<div class="footer">
+    <p>AiKen 新品调研 · 洞察报告 &nbsp;|&nbsp; 样本 N=56 &nbsp;|&nbsp; 2025</p>
+    <p style="margin-top:4px;">数据来源：钉钉多维表格问卷 · 分析工具：AiKen 产品团队</p>
+</div>
+
+</body>
+</html>
