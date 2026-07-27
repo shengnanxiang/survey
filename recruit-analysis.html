@@ -181,7 +181,9 @@ function setView(v) { currentView = v; currentFilter = 'all'; renderDashboard();
 // ============================================================
 function renderDashboard() {
     const html = renderNavTabs() + (
-        currentView === 'overview' ? renderOverview() : renderComparison()
+        currentView === 'overview' ? renderOverview() :
+        currentView === 'comparison' ? renderComparison() :
+        renderRecommendation()
     );
     document.getElementById('dashboardContent').innerHTML = html;
     bindSummaryCards();
@@ -192,6 +194,7 @@ function renderNavTabs() {
     <div class="nav-tabs">
         <button class="nav-tab${currentView==='overview'?' active':''}" onclick="setView('overview')">📊 全量分析</button>
         <button class="nav-tab${currentView==='comparison'?' active':''}" onclick="setView('comparison')">⚖️ 正负面态度对比</button>
+        <button class="nav-tab${currentView==='recommend'?' active':''}" onclick="setView('recommend')">🎯 访谈推荐名单</button>
     </div>`;
 }
 
@@ -561,6 +564,115 @@ function renderInsights(data) {
 }
 
 function escapeHtml(s) { return String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+// ============================================================
+// RECOMMENDATION PAGE
+// ============================================================
+function renderRecommendation() {
+    const batch1 = ['闪电', '张子璟', '刘伟钢', '雷锋', '李雨露', '王莉'];
+    const batch2 = ['冯洁', '宋秋平', '段海波', '朱语婷', '卢华山', '伍英洁'];
+    const allNames = [...batch1, ...batch2];
+    const lookup = {};
+    SURVEY_DATA.forEach(r => { if (r.name) lookup[r.name] = r; });
+
+    let html = '';
+
+    // Summary header
+    html += `<div class="highlight-box">
+        <h4>🎯 访谈推荐名单 · 共 12 人</h4>
+        <p style="font-size:13px;color:var(--text-soft);margin-top:6px;line-height:1.7">
+        基于问卷综合评分，结合 <strong>G1/G2/G3 分组覆盖</strong>、<strong>对 AiKen 态度多样性</strong>、<strong>年龄/性别均衡</strong> 精选而出。
+        已排除项目组成员、设计师、产品经理等内部人员。
+        </p>
+    </div>`;
+
+    // Batch 1
+    html += `<div class="section"><div class="section-title">🥇 第一批：强烈推荐（6人）</div>`;
+    html += `<p style="font-size:12px;color:var(--text-muted);margin-bottom:16px">高分全能型，分组覆盖全面，态度积极，是访谈核心产出来源。</p>`;
+    html += renderRecommendCards(batch1, lookup, 'batch1');
+    html += `</div>`;
+
+    // Batch 2
+    html += `<div class="section"><div class="section-title">🥈 第二批：建议进行（6人）</div>`;
+    html += `<p style="font-size:12px;color:var(--text-muted);margin-bottom:16px">补充年龄/性别/态度多样性，包含负面态度用户以获取多元视角。</p>`;
+    html += renderRecommendCards(batch2, lookup, 'batch2');
+    html += `</div>`;
+
+    // Coverage summary
+    const allR = allNames.map(n => lookup[n]).filter(Boolean);
+    const ageGroups = {'18-25岁':0,'26-35岁':0,'36-45岁':0,'46岁以上':0};
+    allR.forEach(r => { if (ageGroups[r.age] !== undefined) ageGroups[r.age]++; });
+    const genders = {男:0,女:0};
+    allR.forEach(r => { if (genders[r.gender] !== undefined) genders[r.gender]++; });
+    const gCounts = {G1:0,G2:0,G3:0};
+    allR.forEach(r => r.groups.forEach(g => { if (gCounts[g] !== undefined) gCounts[g]++; }));
+    const attPos = allR.filter(r => r.concept_reaction==='很有意思，想试试'||r.concept_reaction==='有点好奇，但不确定自己会不会用').length;
+    const attNeg = allR.filter(r => r.concept_reaction==='听起来有点麻烦'||r.concept_reaction==='完全不感兴趣').length;
+    const wYes = allR.filter(r => r.interview==='很想参加').length;
+    const wMaybe = allR.filter(r => r.interview==='可以参加，但要看具体时间').length;
+
+    html += `<div class="section"><div class="section-title">📊 覆盖情况</div>`;
+    html += `<table><thead><tr><th>维度</th><th>分布</th></tr></thead><tbody>`;
+    html += `<tr><td>年龄</td><td>${ageGroups['18-25岁']}人 18-25岁 / ${ageGroups['26-35岁']}人 26-35岁 / ${ageGroups['36-45岁']}人 36-45岁</td></tr>`;
+    html += `<tr><td>性别</td><td>${genders['男']}男 / ${genders['女']}女</td></tr>`;
+    html += `<tr><td>分组覆盖</td><td>G1 胶片好奇者 ${gCounts['G1']}人 · G2 胶卷/拍立得经历 ${gCounts['G2']}人 · G3 潮玩购买者 ${gCounts['G3']}人</td></tr>`;
+    html += `<tr><td>AiKen 态度</td><td>正面 ${attPos}人 · 负面 ${attNeg}人（含持负面态度的真实用户视角）</td></tr>`;
+    html += `<tr><td>访谈意愿</td><td>很想参加 ${wYes}人 · 看具体时间 ${wMaybe}人</td></tr>`;
+    html += `</tbody></table></div>`;
+
+    return html;
+}
+
+function renderRecommendCards(names, lookup, batch) {
+    const avatarColors = ['#3ecf8e','#7c9bff','#a48bff','#f7b955','#e0558a','#4dc9f6'];
+    const wLabel = {'很想参加':'很愿意','可以参加，但要看具体时间':'看时间'};
+    const wCls = {'很想参加':'green','可以参加，但要看具体时间':'orange'};
+    const attCls = {'很有意思，想试试':'green','有点好奇，但不确定自己会不会用':'orange','听起来有点麻烦':'red','完全不感兴趣':'red'};
+
+    let html = '<div style="display:flex;flex-direction:column;gap:14px;">';
+    names.forEach((name, i) => {
+        const r = lookup[name];
+        if (!r) return;
+        const g = r.groups.length ? r.groups.join('+') : '无';
+        const color = avatarColors[i % avatarColors.length];
+
+        html += `<div class="highlight-box" style="margin-bottom:0;padding:16px 20px;">
+            <div style="display:flex;align-items:flex-start;gap:14px;">
+                <div style="width:40px;height:40px;border-radius:50%;background:${color};display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;color:#fff;flex-shrink:0;">${name[0]}</div>
+                <div style="flex:1;min-width:0;">
+                    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
+                        <strong style="font-size:15px;">${escapeHtml(name)}</strong>
+                        <span style="font-size:12px;color:var(--text-muted)">${r.age} · ${r.gender}</span>
+                        <span class="tag ${wCls[r.interview]||''}">${wLabel[r.interview]||r.interview}</span>
+                        <span class="tag ${attCls[r.concept_reaction]||''}">${r.concept_reaction.length>10?r.concept_reaction.substring(0,10)+'…':r.concept_reaction}</span>
+                        ${r.groups.map(grp => `<span class="filter-badge ${grp.toLowerCase()}">${grp}</span>`).join('')}
+                    </div>
+                    <div style="font-size:12px;color:var(--text-muted);line-height:1.7;">
+                        📷 ${r.devices.join(' · ')}<br>
+                        🎞️ 胶卷: ${r.film_exp} | 拍立得: ${r.instant_exp}<br>
+                        🎨 滤镜: ${r.filter_freq} | 🛒 购买: ${r.purchased.join(' · ')}<br>
+                        💭 仪式感: ${r.ritual} | 📱 社媒: ${r.share_freq}<br>
+                        ${i < 6 ? '⭐ <span style="color:var(--text-soft);">推荐理由: ' + getRecommendReason(name, r) + '</span>' : ''}
+                    </div>
+                </div>
+            </div>
+        </div>`;
+    });
+    html += '</div>';
+    return html;
+}
+
+function getRecommendReason(name, r) {
+    const reasons = {
+        '闪电': '年轻潮玩全装备用户，胶卷+CCD+运动相机，AiKen 高度认同，小红书活跃，是目标用户画像典范',
+        '张子璟': '唯一 G1+G2+G3 三星全中，胶片好奇+拍立得用户+潮玩购买，视角最全面',
+        '刘伟钢': 'G1 胶片好奇者代表，年轻男性，专业相机用户，用滤镜，仪式感高度吻合',
+        '雷锋': 'G1+G3 独特组合，胶片好奇+CCD 购买者，大龄男性视角，AiKen 态度积极',
+        '李雨露': '纯 G2 用户，只用过胶卷已不用，态度温和好奇，代表"曾经用过"的大众群体',
+        '王莉': 'G2+G3 但对 AiKen 觉得麻烦——关键反差视角，帮助理解产品疑虑点',
+    };
+    return reasons[name] || '';
+}
 </script>
 </body>
 </html>
