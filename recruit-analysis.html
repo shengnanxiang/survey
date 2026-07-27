@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AiKen 新品调研 · 数据分析看板</title>
+<style>
+:root {
+    --bg: #0e1220;
+    --panel: #171c2e;
+    --border: #262c44;
+    --text: #e8ecf5;
+    --text-soft: #b3bacd;
+    --text-muted: #7d859e;
+    --accent: #7c9bff;
+    --accent-2: #a48bff;
+    --success: #3ecf8e;
+    --warn: #f7b955;
+    --danger: #e0558a;
+    --radius: 12px;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { height:100%; background:var(--bg); color:var(--text); font-family:var(--font); }
+body { display:flex; flex-direction:column; }
+
+.toolbar {
+    padding: 16px 28px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+    background: var(--bg); position: sticky; top:0; z-index:10;
+}
+.toolbar h1 { font-size: 20px; font-weight: 700; }
+.toolbar-right { display:flex; align-items:center; gap:16px; }
+.toolbar-right .meta { font-size:12px; color:var(--text-muted); }
+
+.main {
+    flex:1; overflow-y:auto; padding:24px 28px;
+    scrollbar-width:thin; scrollbar-color:rgba(255,255,255,0.08) transparent;
+}
+.main::-webkit-scrollbar { width:5px; }
+.main::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.08); border-radius:3px; }
+
+/* Summary Cards */
+.summary-row { display:flex; gap:14px; margin-bottom:28px; flex-wrap:wrap; }
+.summary-card {
+    flex:1; min-width:155px; background:var(--panel); border:2px solid var(--border);
+    border-radius:var(--radius); padding:18px 20px; cursor:pointer;
+    transition: all 0.25s ease; user-select:none; position:relative; overflow:hidden;
+}
+.summary-card:hover { border-color: rgba(255,255,255,0.3); transform: translateY(-1px); }
+.summary-card.active { border-color: var(--accent); box-shadow: 0 0 20px rgba(124,155,255,0.15); }
+.summary-card .label { font-size:12px; color:var(--text-muted); margin-bottom:8px; display:flex; align-items:center; gap:8px; }
+.summary-card .value { font-size:30px; font-weight:700; }
+.summary-card .sub { font-size:11px; color:var(--text-muted); margin-top:4px; }
+.summary-card.active::after { content:''; position:absolute; bottom:0; left:0; right:0; height:3px; background:var(--accent); border-radius:0 0 var(--radius) var(--radius); }
+.card-all .value { color: var(--text); }
+.card-willing .value { color: #3ecf8e; }
+.card-maybe .value { color: #f7b955; }
+.card-unlikely .value { color: var(--danger); }
+.card-willing.active { border-color: #3ecf8e; box-shadow: 0 0 20px rgba(62,207,142,0.15); }
+.card-willing.active::after { background: #3ecf8e; }
+.card-maybe.active { border-color: #f7b955; box-shadow: 0 0 20px rgba(247,185,85,0.15); }
+.card-maybe.active::after { background: #f7b955; }
+.card-unlikely.active { border-color: var(--danger); box-shadow: 0 0 20px rgba(224,85,138,0.15); }
+.card-unlikely.active::after { background: var(--danger); }
+
+/* Filter indicator */
+.filter-indicator {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 16px; border-radius: 8px; margin-bottom: 24px; font-size:13px;
+    color: var(--text-soft); background: rgba(124,155,255,0.08); border: 1px solid rgba(124,155,255,0.2);
+}
+.filter-indicator .clear-filter {
+    padding: 4px 10px; border-radius: 4px; font-size: 11px;
+    border: 1px solid var(--border); background: transparent;
+    color: var(--text-soft); cursor: pointer; font-family: var(--font);
+}
+.filter-indicator .clear-filter:hover { color: var(--text); border-color: var(--accent); }
+
+/* Sections */
+.section { margin-bottom:28px; }
+.section-title { font-size:15px; font-weight:600; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+.section-title::before { content:''; width:3px; height:16px; background:var(--accent); border-radius:2px; flex-shrink:0; }
+
+/* Bar chart */
+.bar-cell { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+.bar-label { width:180px; flex-shrink:0; text-align:right; font-size:12px; color:var(--text-soft); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.bar-track { flex:1; height:24px; background:rgba(255,255,255,0.04); border-radius:4px; overflow:hidden; position:relative; }
+.bar-fill { height:100%; border-radius:4px; transition:width 0.5s ease; background:linear-gradient(90deg, var(--accent), var(--accent-2)); }
+.bar-val { font-size:11px; color:var(--text-muted); width:60px; flex-shrink:0; }
+
+/* Contact Grid */
+.contact-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 10px;
+}
+.contact-card {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 16px; font-size:13px;
+    display: flex; align-items: center; gap: 12px;
+    transition: border-color 0.2s;
+}
+.contact-card:hover { border-color: rgba(255,255,255,0.2); }
+.contact-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 700; flex-shrink: 0; color: #fff;
+}
+.contact-info { flex:1; min-width:0; }
+.contact-info .name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.contact-info .detail { color: var(--text-muted); font-size: 11px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.contact-tags { display: flex; gap: 4px; flex-wrap: wrap; flex-shrink: 0; }
+
+/* Tags */
+.tag { display:inline-block; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:600; letter-spacing:0.03em; white-space:nowrap; }
+.tag.green { background:rgba(62,207,142,0.2); color:#3ecf8e; }
+.tag.orange { background:rgba(247,185,85,0.2); color:#f7b955; }
+.tag.red { background:rgba(224,85,138,0.2); color:#e0558a; }
+.tag.blue { background:rgba(124,155,255,0.2); color:#7c9bff; }
+
+/* Tables */
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th, td { padding:10px 14px; text-align:left; border-bottom:1px solid var(--border); }
+th { color:var(--text-muted); font-weight:500; font-size:11px; text-transform:uppercase; letter-spacing:0.04em; white-space:nowrap; }
+td { color:var(--text-soft); }
+tr:hover td { background:rgba(255,255,255,0.02); }
+
+/* Empty */
+.empty { text-align:center; padding:60px 20px; color:var(--text-muted); }
+.empty h3 { font-size:18px; margin-bottom:8px; color:var(--text-soft); }
+
+/* Responsive */
+@media (max-width: 700px) {
+    .summary-row { flex-direction: column; }
+    .contact-grid { grid-template-columns: 1fr; }
+    .bar-label { width: 110px; }
+    .main { padding: 16px; }
+    .toolbar { padding: 12px 16px; }
+}
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+    <h1>AiKen 新品调研 · 数据分析看板</h1>
+    <div class="toolbar-right">
+        <span class="meta" id="respCount">—</span>
+    </div>
+</div>
+
+<div class="main" id="mainContent">
+    <div id="dashboardContent"></div>
+</div>
+
+<script>
+// ============================================================
+// DATA — embedded from Excel
+// ============================================================
+const SURVEY_DATA = [{"age": "18-25岁", "gender": "女", "devices": ["手机", "情怀、潮玩相机（CCD、潮玩类）", "胶卷相机", "运动相机（GoPro、大疆等）"], "film_exp": "是，现在还在用", "instant_exp": "是，现在还在用", "filter_freq": "经常使用（每周至少几次）", "purchased": ["潮玩相机（如柯达钥匙圈相机）"], "share_freq": "经常分享（每周几次）", "platforms": ["小红书", "微信朋友圈", "其他"], "photo_attitude": "大部分是随手记录，偶尔想认真拍", "phone_not_enough": "偶尔有", "scenes": ["一个人逛街", "朋友聚会、生日派对等", "旅行中的特别时刻", "户外徒步、露营活动", "校园日常、宿舍生活"], "concept_reaction": "很有意思，想试试", "ritual": "不追求完美，但每次快门都经过思考", "interview": "很想参加", "name": "闪电"}, {"age": "36-45岁", "gender": "女", "devices": ["手机"], "film_exp": "用过，但已经不用了", "instant_exp": "从没用过，也不太感兴趣", "filter_freq": "偶尔使用（每月几次）", "purchased": ["以上都没有"], "share_freq": "偶尔分享（每月几次）", "platforms": ["小红书", "微信朋友圈"], "photo_attitude": "大部分是随手记录，偶尔想认真拍", "phone_not_enough": "偶尔有", "scenes": ["和朋友City Walk、探店、打卡网红点", "旅行中的特别时刻", "朋友聚会、生日派对等"], "concept_reaction": "有点好奇，但不确定自己会不会用", "ritual": "不追求完美，但每次快门都经过思考", "interview": "可以参加，但要看具体时间", "name": "贺玲"}, {"age": "26-35岁", "gender": "女", "devices": ["手机"], "film_exp": "用过，但已经不用了", "instant_exp": "用过，但已经不用了", "filter_freq": "偶尔使用（每月几次）", "purchased": ["CCD相机", "以上都没有"], "share_freq": "经常分享（每周几次）", "platforms": ["抖音", "微信朋友圈"], "photo_attitude": "大部分是随手记录，偶尔想认真拍", "phone_not_enough": "经常有这种感觉", "scenes": ["看展、逛博物馆等", "户外徒步、露营活动"], "concept_reaction": "有点好奇，但不确定自己会不会用", "ritual": "不追求完美，但每次快门都经过思考", "interview": "不太方便参加", "name": ""}, {"age": "26-35岁", "gender": "男", "devices": ["手机", "专业数码相机（微单、单反）"], "film_exp": "用过，但已经不用了", "instant_exp": "是，现在还在用", "filter_freq": "偶尔使用（每月几次）", "purchased": ["CCD相机", "富士拍立得"], "share_freq": "偶尔分享（每月几次）", "platforms": ["小红书", "微信朋友圈", "Instagram"], "photo_attitude": "大部分想认真拍，偶尔随手记录", "phone_not_enough": "经常有这种感觉", "scenes": ["一个人逛街", "朋友聚会、生日派对等", "看展、逛博物馆等", "旅行中的特别时刻", "户外徒步、露营活动"], "concept_reaction": "很有意思，想试试", "ritual": "不追求完美，但每次快门都经过思考", "interview": "不太方便参加", "name": ""}, {"age": "26-35岁", "gender": "男", "devices": ["手机"], "film_exp": "用过，但已经不用了", "instant_exp": "用过，但已经不用了", "filter_freq": "偶尔使用（每月几次）", "purchased": ["以上都没有"], "share_freq": "偶尔分享（每月几次）", "platforms": ["微信朋友圈"], "photo_attitude": "大部分是随手记录，偶尔想认真拍", "phone_not_enough": "偶尔有", "scenes": ["和朋友City Walk、探店、打卡网红点", "看展、逛博物馆等", "演唱会、音乐节等", "旅行中的特别时刻", "朋友聚会、生日派对等"], "concept_reaction": "听起来有点麻烦", "ritual": "拍完立刻拿到实体照片", "interview": "不太方便参加", "name": ""}, {"age": "26-35岁", "gender": "男", "devices": ["手机"], "film_exp": "从没用过，但挺好奇的", "instant_exp": "从没用过，但挺好奇的", "filter_freq": "从未使用过", "purchased": ["以上都没有"], "share_freq": "几乎不分享", "platforms": [], "photo_attitude": "几乎每次都是认真对待", "phone_not_enough": "经常有这种感觉", "scenes": ["一个人逛街", "和朋友City Walk、探店、打卡网红点", "朋友聚会、生日派对等", "看展、逛博物馆等", "演唱会、音乐节等"], "concept_reaction": "有点好奇，但不确定自己会不会用", "ritual": "不追求完美，但每次快门都经过思考", "interview": "不太方便参加", "name": ""}, {"age": "36-45岁", "gender": "女", "devices": ["手机", "专业数码相机（微单、单反）", "运动相机（GoPro、大疆等）", "情怀、潮玩相机（CCD、潮玩类）"], "film_exp": "用过，但已经不用了", "instant_exp": "是，现在还在用", "filter_freq": "经常使用（每周至少几次）", "purchased": ["CCD相机"], "share_freq": "经常分享（每周几次）", "platforms": ["小红书", "微信朋友圈", "抖音"], "photo_attitude": "大部分是随手记录，偶尔想认真拍", "phone_not_enough": "经常有这种感觉", "scenes": ["看展、逛博物馆等", "旅行中的特别时刻", "和朋友City Walk、探店、打卡网红点", "朋友聚会、生日派对等", "日常遛狗、带娃"], "concept_reaction": "有点好奇，但不确定自己会不会用", "ritual": "精心构图、调参数、灯光线", "interview": "很想参加", "name": "刘莹"}, {"age": "26-35岁", "gender": "男", "devices": ["手机", "运动相机（GoPro、大疆等）"], "film_exp": "从没用过，但挺好奇的", "instant_exp": "从没用过，但挺好奇的", "filter_freq": "从未使用过", "purchased": ["以上都没有"], "share_freq": "偶尔分享（每月几次）", "platforms": ["微信朋友圈", "抖音"], "photo_attitude": "大部分是随手记录，偶尔想认真拍", "phone_not_enough": "偶尔有", "scenes": ["一个人逛街", "户外徒步、露营活动"], "concept_reaction": "有点好奇，但不确定自己会不会用", "ritual": "不追求完美，但每次快门都经过思考", "interview": "可以参加，但要看具体时间", "name": "卢华山"}, {"age": "26-35岁", "gender": "男", "devices": ["手机"], "film_exp": "从没用过，但挺好奇的", "instant_exp": "从没用过，也不太感兴趣", "filter_freq": "从未使用过", "purchased": ["以上都没有"], "share_freq": "偶尔分享（每月几次）", "platforms": ["微信朋友圈"], "photo_attitude": "大部分是随手记录，偶尔想认真拍", "phone_not_enough": "从没有过，手机拍照挺好的", "scenes": ["一个人逛街", "看展、逛博物馆等", "旅行中的特别时刻", "校园日常、宿舍生活", "户外徒步、露营活动"], "concept_reaction": "听起来有点麻烦", "ritual": "拍完立刻拿到实体照片", "interview": "可以参加，但要看具体时间", "name": "夏孝杰"}, {"age": "26-35岁", "gender": "男", "devices": ["手机"], "film_exp": "从没用过，但挺好奇的", "instant_exp": "是，现在还在用", "filter_freq": "偶尔使用（每月几次）", "purchased": ["富士拍立得"], "share_freq": "几乎不分享", "platforms": [], "photo_attitude": "大部分是随手记录，偶尔想认真拍", "phone_not_enough": "从没有过，手机拍照挺好的", "scenes": ["一个人逛街", "演唱会、音乐节等", "旅行中的特别时刻"], "concept_reaction": "完全不感兴趣", "ritual": "拍照不需要仪式感，快速记录就行", "interview": "不太方便参加", "name": ""}, {"age": "26-35岁", "gender": "男", "devices": ["手机", "专业数码相机（微单、单反）", "胶卷相机", "运动相机（GoPro、大疆等）"], "film_exp": "用过，但已经不用了", "instant_exp": "用过，但已经不用了", "filter_freq": "经常使用（每周至少几次）", "purchased": ["以上都没有"], "share_freq": "偶尔分享（每月几次）", "platforms": ["Instagram", "其他", "微信朋友圈"], "photo_attitude": "大部分是随手记录，偶尔想认真拍", "phone_not_enough": "好像有过几次", "scenes": ["和朋友City Walk、探店、打卡网红点", "看展、逛博物馆等", "旅行中的特别时刻", "户外徒步、露营活动", "一个人逛街"], "concept_reaction": "有点好奇，但不确定自己会不会用", "ritual": "不追求完美，但每次快门都经过思考", "interview": "可以参加，但要看具体时间", "name": "段海波"}, {"age": "26-35岁", "gender": "女", "devices": ["手机", "拍立得", "运动相机（GoPro、大疆等）"], "film_exp": "从没用过，但挺好奇的", "instant_exp": "是，现在还在用", "filter_freq": "经常使用（每周至少几次）", "purchased": ["富士拍立得"], "share_freq": "经常分享（每周几次）", "platforms": ["微信朋友圈", "小红书", "抖音"], "photo_attitude": "大部分是随手记录，偶尔想认真拍", "phone_not_enough": "偶尔有", "scenes": ["和朋友City Walk、探店、打卡网红点", "朋友聚会、生日派对等", "看展、逛博物馆等", "旅行中的特别时刻"], "concept_reaction": "听起来有点麻烦", "ritual": "不追求完美，但每次快门都经过思考", "interview": "不太方便参加", "name": ""}, {"age": "36-45岁", "gender": "男", "devices": ["手机"], "film_exp": "用过，但已经不用了", "instant_exp": "从没用过，也不太感兴趣", "filter_freq": "从未使用过", "purchased": ["以上都没有"], "share_freq": "几乎不分享", "platforms": [], "photo_attitude": "基本都是随手记录", "phone_not_enough": "偶尔有", "scenes": ["旅行中的特别时刻", "朋友聚会、生日派对等"], "concept_reaction": "完全不感兴趣", "ritual": "拍照不需要仪式感，快速记录就行", "interview": "不太方便参加", "name": ""}, {"age": "26-35岁", "gender": "女", "devices": ["手机", "专业数码相机（微单、单反）", "拍立得", "运动相机（GoPro、大疆等）"], "film_exp": "从没用过，但挺好奇的", "instant_exp": "是，现在还在用", "filter_freq": "很少使用（装过但很少打开）", "purchased": ["富士拍立得"], "share_freq": "偶尔分享（每月几次）", "platforms": ["小红书"], "photo_attitude": "大部分想认真拍，偶尔随手记录", "phone_not_enough": "经常有这种感觉", "scenes": ["旅行中的特别时刻"], "concept_reaction": "有点好奇，但不确定自己会不会用", "ritual": "拍完立刻拿到实体照片", "interview": "很想参加", "name": "张子璟"}, {"age": "26-35岁", "gender": "女", "devices": ["手机", "专业数码相机（微单、单反）"], "film_exp": "从没用过，但挺好奇的", "instant_exp": "从没用过，但挺好奇的", "filter_freq": "偶尔使用（每月几次）", "purchased": ["以上都没有"], "share_freq": "偶尔分享（每月几次）", "platforms": ["微信朋友圈", "小红书"], "photo_attitude": "大部分是随手记录，偶尔想认真拍", "phone_not_enough": "经常有这种感觉", "scenes": ["一个人逛街", "和朋友City Walk、探店、打卡网红点", "朋友聚会、生日派对等", "看展、逛博物馆等", "户外徒步、露营活动"], "concept_reaction": "听起来有点麻烦", "ritual": "精心构图、调参数、灯光线", "interview": "可以参加，但要看具体时间", "name": "伍英洁"}, {"age": "36-45岁", "gender": "男", "devices": ["手机", "专业数码相机（微单、单反）"], "film_exp": "从没用过，但挺好奇的", "instant_exp": "从没用过，也不太感兴趣", "filter_freq": "很少使用（装过但很少打开）", "purchased": ["CCD相机"], "share_freq": "偶尔分享（每月几次）", "platforms": ["抖音"], "photo_attitude": "大部分是随手记录，偶尔想认真拍", "phone_not_enough": "偶尔有", "scenes": ["一个人逛街", "和朋友City Walk、探店、打卡网红点", "校园日常、宿舍生活", "日常遛狗、带娃"], "concept_reaction": "很有意思，想试试", "ritual": "不追求完美，但每次快门都经过思考", "interview": "可以参加，但要看具体时间", "name": "雷锋"}, {"age": "36-45岁", "gender": "女", "devices": ["手机", "专业数码相机（微单、单反）"], "film_exp": "用过，但已经不用了", "instant_exp": "用过，但已经不用了", "filter_freq": "很少使用（装过但很少打开）", "purchased": ["以上都没有"], "share_freq": "偶尔分享（每月几次）", "platforms": ["微信朋友圈", "抖音"], "photo_attitude": "大部分是随手记录，偶尔想认真拍", "phone_not_enough": "偶尔有", "scenes": ["户外徒步、露营活动", "旅行中的特别时刻"], "concept_reaction": "听起来有点麻烦", "ritual": "拍照不需要仪式感，快速记录就行", "interview": "不太方便参加", "name": ""}, {"age": "18-25岁", "gender": "女", "devices": ["手机", "专业数码相机（微单、单反）", "拍立得", "情怀、潮玩相机（CCD、潮玩类）", "胶卷相机"], "film_exp": "是，现在还在用", "instant_exp": "是，现在还在用", "filter_freq": "很少使用（装过但很少打开）", "purchased": ["富士拍立得", "CCD相机"], "share_freq": "经常分享（每周几次）", "platforms": ["微信朋友圈", "抖音"], "photo_attitude": "大部分想认真拍，偶尔随手记录", "phone_not_enough": "偶尔有", "scenes": ["和朋友City Walk、探店、打卡网红点", "朋友聚会、生日派对等", "演唱会、音乐节等", "旅行中的特别时刻", "户外徒步、露营活动"], "concept_reaction": "很有意思，想试试", "ritual": "精心构图、调参数、灯光线", "interview": "可以参加，但要看具体时间", "name": "冯洁"}, {"age": "26-35岁", "gender": "男", "devices": ["手机"], "film_exp": "从没用过，也不太感兴趣", "instant_exp": "从没用过，也不太感兴趣", "filter_freq": "从未使用过", "purchased": ["以上都没有"], "share_freq": "几乎不分享", "platforms": [], "photo_attitude": "差不多", "phone_not_enough": "从没有过，手机拍照挺好的", "scenes": ["旅行中的特别时刻"], "concept_reaction": "听起来有点麻烦", "ritual": "精心构图、调参数、灯光线", "interview": "可以参加，但要看具体时间", "name": "张云杰"}, {"age": "46岁以上", "gender": "男", "devices": ["专业数码相机（微单、单反）", "手机", "运动相机（GoPro、大疆等）"], "film_exp": "用过，但已经不用了", "instant_exp": "从没用过，也不太感兴趣", "filter_freq": "从未使用过", "purchased": ["以上都没有"], "share_freq": "偶尔分享（每月几次）", "platforms": ["微信朋友圈"], "photo_attitude": "大部分想认真拍，偶尔随手记录", "phone_not_enough": "偶尔有", "scenes": ["一个人逛街", "旅行中的特别时刻"], "concept_reaction": "听起来有点麻烦", "ritual": "精心构图、调参数、灯光线", "interview": "可以参加，但要看具体时间", "name": "陆军"}, {"age": "18-25岁", "gender": "男", "devices": ["手机", "专业数码相机（微单、单反）"], "film_exp": "从没用过，但挺好奇的", "instant_exp": "用过，但已经不用了", "filter_freq": "偶尔使用（每月几次）", "purchased": ["以上都没有"], "share_freq": "经常分享（每周几次）", "platforms": ["微信朋友圈"], "photo_attitude": "大部分是随手记录，偶尔想认真拍", "phone_not_enough": "经常有这种感觉", "scenes": ["一个人逛街", "看展、逛博物馆等", "旅行中的特别时刻", "和朋友City Walk、探店、打卡网红点"], "concept_reaction": "有点好奇，但不确定自己会不会用", "ritual": "不追求完美，但每次快门都经过思考", "interview": "可以参加，但要看具体时间", "name": "刘伟钢"}, {"age": "26-35岁", "gender": "女", "devices": ["手机"], "film_exp": "从没用过，但挺好奇的", "instant_exp": "从没用过，但挺好奇的", "filter_freq": "从未使用过", "purchased": ["以上都没有"], "share_freq": "偶尔分享（每月几次）", "platforms": ["抖音", "微信朋友圈"], "photo_attitude": "大部分是随手记录，偶尔想认真拍", "phone_not_enough": "从没有过，手机拍照挺好的", "scenes": ["一个人逛街", "朋友聚会、生日派对等", "演唱会、音乐节等"], "concept_reaction": "听起来有点麻烦", "ritual": "拍照不需要仪式感，快速记录就行", "interview": "不太方便参加", "name": ""}, {"age": "26-35岁", "gender": "男", "devices": ["手机"], "film_exp": "从没用过，但挺好奇的", "instant_exp": "从没用过，但挺好奇的", "filter_freq": "偶尔使用（每月几次）", "purchased": ["以上都没有"], "share_freq": "偶尔分享（每月几次）", "platforms": ["微信朋友圈"], "photo_attitude": "几乎每次都是认真对待", "phone_not_enough": "偶尔有", "scenes": ["一个人逛街", "看展、逛博物馆等", "旅行中的特别时刻", "户外徒步、露营活动"], "concept_reaction": "听起来有点麻烦", "ritual": "精心构图、调参数、灯光线", "interview": "可以参加，但要看具体时间", "name": "极印内容运营-张震"}, {"age": "18-25岁", "gender": "男", "devices": ["手机", "专业数码相机（微单、单反）"], "film_exp": "用过，但已经不用了", "instant_exp": "从没用过，但挺好奇的", "filter_freq": "很少使用（装过但很少打开）", "purchased": ["以上都没有"], "share_freq": "几乎不分享", "platforms": [], "photo_attitude": "基本都是随手记录", "phone_not_enough": "经常有这种感觉", "scenes": ["和朋友City Walk、探店、打卡网红点", "朋友聚会、生日派对等", "看展、逛博物馆等", "演唱会、音乐节等", "户外徒步、露营活动"], "concept_reaction": "听起来有点麻烦", "ritual": "精心构图、调参数、灯光线", "interview": "不太方便参加", "name": ""}, {"age": "26-35岁", "gender": "女", "devices": ["手机", "专业数码相机（微单、单反）"], "film_exp": "从没用过，但挺好奇的", "instant_exp": "从没用过，但挺好奇的", "filter_freq": "从未使用过", "purchased": ["以上都没有"], "share_freq": "偶尔分享（每月几次）", "platforms": ["微信朋友圈"], "photo_attitude": "大部分是随手记录，偶尔想认真拍", "phone_not_enough": "偶尔有", "scenes": ["旅行中的特别时刻"], "concept_reaction": "听起来有点麻烦", "ritual": "不追求完美，但每次快门都经过思考", "interview": "不太方便参加", "name": ""}, {"age": "36-45岁", "gender": "男", "devices": ["手机"], "film_exp": "用过，但已经不用了", "instant_exp": "用过，但已经不用了", "filter_freq": "从未使用过", "purchased": ["以上都没有"], "share_freq": "偶尔分享（每月几次）", "platforms": ["微信朋友圈"], "photo_attitude": "大部分是随手记录，偶尔想认真拍", "phone_not_enough": "从没有过，手机拍照挺好的", "scenes": ["和朋友City Walk、探店、打卡网红点", "朋友聚会、生日派对等"], "concept_reaction": "听起来有点麻烦", "ritual": "不追求完美，但每次快门都经过思考", "interview": "不太方便参加", "name": ""}, {"age": "26-35岁", "gender": "男", "devices": ["手机"], "film_exp": "用过，但已经不用了", "instant_exp": "从没用过，也不太感兴趣", "filter_freq": "很少使用（装过但很少打开）", "purchased": ["以上都没有"], "share_freq": "几乎不分享", "platforms": [], "photo_attitude": "大部分是随手记录，偶尔想认真拍", "phone_not_enough": "从没有过，手机拍照挺好的", "scenes": ["旅行中的特别时刻"], "concept_reaction": "完全不感兴趣", "ritual": "拍照不需要仪式感，快速记录就行", "interview": "不太方便参加", "name": ""}, {"age": "46岁以上", "gender": "男", "devices": ["手机", "专业数码相机（微单、单反）"], "film_exp": "用过，但已经不用了", "instant_exp": "从没用过，也不太感兴趣", "filter_freq": "很少使用（装过但很少打开）", "purchased": ["以上都没有"], "share_freq": "几乎不分享", "platforms": [], "photo_attitude": "几乎每次都是认真对待", "phone_not_enough": "从没有过，手机拍照挺好的", "scenes": ["朋友聚会、生日派对等", "演唱会、音乐节等", "旅行中的特别时刻", "户外徒步、露营活动"], "concept_reaction": "听起来有点麻烦", "ritual": "精心构图、调参数、灯光线", "interview": "不太方便参加", "name": ""}, {"age": "26-35岁", "gender": "女", "devices": ["手机"], "film_exp": "从没用过，也不太感兴趣", "instant_exp": "从没用过，也不太感兴趣", "filter_freq": "很少使用（装过但很少打开）", "purchased": ["以上都没有"], "share_freq": "偶尔分享（每月几次）", "platforms": ["微信朋友圈", "小红书"], "photo_attitude": "基本都是随手记录", "phone_not_enough": "偶尔有", "scenes": ["旅行中的特别时刻", "户外徒步、露营活动", "日常遛狗、带娃"], "concept_reaction": "听起来有点麻烦", "ritual": "不追求完美，但每次快门都经过思考", "interview": "可以参加，但要看具体时间", "name": "孙华"}, {"age": "26-35岁", "gender": "女", "devices": ["手机", "运动相机（GoPro、大疆等）"], "film_exp": "用过，但已经不用了", "instant_exp": "用过，但已经不用了", "filter_freq": "很少使用（装过但很少打开）", "purchased": ["富士拍立得"], "share_freq": "几乎不分享", "platforms": [], "photo_attitude": "大部分是随手记录，偶尔想认真拍", "phone_not_enough": "从没有过，手机拍照挺好的", "scenes": ["旅行中的特别时刻", "户外徒步、露营活动", "其他"], "concept_reaction": "有点好奇，但不确定自己会不会用", "ritual": "不追求完美，但每次快门都经过思考", "interview": "很想参加", "name": "李丹阳"}, {"age": "36-45岁", "gender": "男", "devices": ["手机"], "film_exp": "从没用过，也不太感兴趣", "instant_exp": "从没用过，但挺好奇的", "filter_freq": "很少使用（装过但很少打开）", "purchased": ["以上都没有"], "share_freq": "偶尔分享（每月几次）", "platforms": ["微信朋友圈", "抖音"], "photo_attitude": "基本都是随手记录", "phone_not_enough": "经常有这种感觉", "scenes": ["和朋友City Walk、探店、打卡网红点", "朋友聚会、生日派对等", "旅行中的特别时刻", "户外徒步、露营活动", "日常遛狗、带娃"], "concept_reaction": "有点好奇，但不确定自己会不会用", "ritual": "精心构图、调参数、灯光线", "interview": "可以参加，但要看具体时间", "name": "高博"}, {"age": "26-35岁", "gender": "男", "devices": ["手机"], "film_exp": "用过，但已经不用了", "instant_exp": "用过，但已经不用了", "filter_freq": "从未使用过", "purchased": ["以上都没有"], "share_freq": "几乎不分享", "platforms": [], "photo_attitude": "大部分是随手记录，偶尔想认真拍", "phone_not_enough": "从没有过，手机拍照挺好的", "scenes": ["看展、逛博物馆等", "旅行中的特别时刻"], "concept_reaction": "听起来有点麻烦", "ritual": "拍完立刻拿到实体照片", "interview": "可以参加，但要看具体时间", "name": "王赫"}, {"age": "26-35岁", "gender": "男", "devices": ["手机", "运动相机（GoPro、大疆等）", "情怀、潮玩相机（CCD、潮玩类）"], "film_exp": "用过，但已经不用了", "instant_exp": "是，现在还在用", "filter_freq": "经常使用（每周至少几次）", "purchased": ["潮玩相机（如柯达钥匙圈相机）"], "share_freq": "偶尔分享（每月几次）", "platforms": ["小红书", "微信朋友圈", "抖音"], "photo_attitude": "几乎每次都是认真对待", "phone_not_enough": "经常有这种感觉", "scenes": ["旅行中的特别时刻", "户外徒步、露营活动"], "concept_reaction": "完全不感兴趣", "ritual": "精心构图、调参数、灯光线", "interview": "不太方便参加", "name": ""}, {"age": "18-25岁", "gender": "男", "devices": ["手机"], "film_exp": "从没用过，也不太感兴趣", "instant_exp": "从没用过，也不太感兴趣", "filter_freq": "从未使用过", "purchased": ["以上都没有"], "share_freq": "几乎不分享", "platforms": [], "photo_attitude": "基本都是随手记录", "phone_not_enough": "从没有过，手机拍照挺好的", "scenes": ["旅行中的特别时刻"], "concept_reaction": "有点好奇，但不确定自己会不会用", "ritual": "精心构图、调参数、灯光线", "interview": "不太方便参加", "name": ""}, {"age": "26-35岁", "gender": "男", "devices": ["手机", "拍立得", "专业数码相机（微单、单反）", "情怀、潮玩相机（CCD、潮玩类）", "运动相机（GoPro、大疆等）"], "film_exp": "从没用过，但挺好奇的", "instant_exp": "是，现在还在用", "filter_freq": "从未使用过", "purchased": ["CCD相机"], "share_freq": "几乎不分享", "platforms": [], "photo_attitude": "大部分是随手记录，偶尔想认真拍", "phone_not_enough": "偶尔有", "scenes": ["一个人逛街", "和朋友City Walk、探店、打卡网红点", "旅行中的特别时刻"], "concept_reaction": "很有意思，想试试", "ritual": "不追求完美，但每次快门都经过思考", "interview": "不太方便参加", "name": ""}, {"age": "46岁以上", "gender": "男", "devices": ["手机"], "film_exp": "用过，但已经不用了", "instant_exp": "从没用过，也不太感兴趣", "filter_freq": "从未使用过", "purchased": ["以上都没有"], "share_freq": "几乎不分享", "platforms": [], "photo_attitude": "大部分是随手记录，偶尔想认真拍", "phone_not_enough": "偶尔有", "scenes": ["一个人逛街", "户外徒步、露营活动", "朋友聚会、生日派对等", "看展、逛博物馆等", "日常遛狗、带娃"], "concept_reaction": "听起来有点麻烦", "ritual": "不追求完美，但每次快门都经过思考", "interview": "不太方便参加", "name": ""}, {"age": "36-45岁", "gender": "男", "devices": ["手机", "专业数码相机（微单、单反）"], "film_exp": "用过，但已经不用了", "instant_exp": "从没用过，但挺好奇的", "filter_freq": "从未使用过", "purchased": ["CCD相机"], "share_freq": "偶尔分享（每月几次）", "platforms": ["微信朋友圈"], "photo_attitude": "基本都是随手记录", "phone_not_enough": "经常有这种感觉", "scenes": ["一个人逛街", "看展、逛博物馆等", "旅行中的特别时刻", "户外徒步、露营活动", "日常遛狗、带娃"], "concept_reaction": "很有意思，想试试", "ritual": "拍完立刻拿到实体照片", "interview": "可以参加，但要看具体时间", "name": "宋秋平"}, {"age": "26-35岁", "gender": "男", "devices": ["手机", "专业数码相机（微单、单反）"], "film_exp": "从没用过，也不太感兴趣", "instant_exp": "用过，但已经不用了", "filter_freq": "从未使用过", "purchased": ["以上都没有"], "share_freq": "几乎不分享", "platforms": [], "photo_attitude": "大部分是随手记录，偶尔想认真拍", "phone_not_enough": "从没有过，手机拍照挺好的", "scenes": ["旅行中的特别时刻"], "concept_reaction": "听起来有点麻烦", "ritual": "拍照不需要仪式感，快速记录就行", "interview": "不太方便参加", "name": ""}, {"age": "18-25岁", "gender": "女", "devices": ["手机"], "film_exp": "从没用过，但挺好奇的", "instant_exp": "从没用过，但挺好奇的", "filter_freq": "经常使用（每周至少几次）", "purchased": ["CCD相机"], "share_freq": "偶尔分享（每月几次）", "platforms": ["小红书", "微信朋友圈", "抖音", "微博"], "photo_attitude": "大部分想认真拍，偶尔随手记录", "phone_not_enough": "经常有这种感觉", "scenes": ["演唱会、音乐节等", "旅行中的特别时刻", "和朋友City Walk、探店、打卡网红点"], "concept_reaction": "很有意思，想试试", "ritual": "不追求完美，但每次快门都经过思考", "interview": "不太方便参加", "name": ""}, {"age": "26-35岁", "gender": "男", "devices": ["手机"], "film_exp": "从没用过，但挺好奇的", "instant_exp": "从没用过，但挺好奇的", "filter_freq": "偶尔使用（每月几次）", "purchased": ["以上都没有"], "share_freq": "几乎不分享", "platforms": [], "photo_attitude": "基本都是随手记录", "phone_not_enough": "从没有过，手机拍照挺好的", "scenes": ["户外徒步、露营活动"], "concept_reaction": "有点好奇，但不确定自己会不会用", "ritual": "拍照不需要仪式感，快速记录就行", "interview": "不太方便参加", "name": ""}, {"age": "18-25岁", "gender": "女", "devices": ["手机"], "film_exp": "从没用过，但挺好奇的", "instant_exp": "从没用过，但挺好奇的", "filter_freq": "从未使用过", "purchased": ["CCD相机"], "share_freq": "几乎不分享", "platforms": [], "photo_attitude": "大部分是随手记录，偶尔想认真拍", "phone_not_enough": "经常有这种感觉", "scenes": ["和朋友City Walk、探店、打卡网红点", "演唱会、音乐节等", "户外徒步、露营活动"], "concept_reaction": "听起来有点麻烦", "ritual": "不追求完美，但每次快门都经过思考", "interview": "可以参加，但要看具体时间", "name": "王雅岚"}, {"age": "36-45岁", "gender": "女", "devices": ["手机"], "film_exp": "用过，但已经不用了", "instant_exp": "从没用过，也不太感兴趣", "filter_freq": "从未使用过", "purchased": ["以上都没有"], "share_freq": "偶尔分享（每月几次）", "platforms": ["微信朋友圈"], "photo_attitude": "差不多", "phone_not_enough": "从没有过，手机拍照挺好的", "scenes": ["户外徒步、露营活动", "旅行中的特别时刻"], "concept_reaction": "有点好奇，但不确定自己会不会用", "ritual": "不追求完美，但每次快门都经过思考", "interview": "可以参加，但要看具体时间", "name": "李雨露"}, {"age": "36-45岁", "gender": "男", "devices": ["手机"], "film_exp": "用过，但已经不用了", "instant_exp": "用过，但已经不用了", "filter_freq": "从未使用过", "purchased": ["以上都没有"], "share_freq": "几乎不分享", "platforms": [], "photo_attitude": "基本都是随手记录", "phone_not_enough": "从没有过，手机拍照挺好的", "scenes": ["旅行中的特别时刻"], "concept_reaction": "完全不感兴趣", "ritual": "拍照不需要仪式感，快速记录就行", "interview": "不太方便参加", "name": ""}, {"age": "26-35岁", "gender": "男", "devices": ["手机"], "film_exp": "从没用过，但挺好奇的", "instant_exp": "用过，但已经不用了", "filter_freq": "很少使用（装过但很少打开）", "purchased": ["以上都没有"], "share_freq": "几乎不分享", "platforms": [], "photo_attitude": "大部分是随手记录，偶尔想认真拍", "phone_not_enough": "好像有过几次", "scenes": ["朋友聚会、生日派对等"], "concept_reaction": "听起来有点麻烦", "ritual": "不追求完美，但每次快门都经过思考", "interview": "不太方便参加", "name": ""}, {"age": "26-35岁", "gender": "男", "devices": ["手机"], "film_exp": "从没用过，也不太感兴趣", "instant_exp": "从没用过，也不太感兴趣", "filter_freq": "从未使用过", "purchased": ["以上都没有"], "share_freq": "几乎不分享", "platforms": [], "photo_attitude": "大部分想认真拍，偶尔随手记录", "phone_not_enough": "偶尔有", "scenes": ["旅行中的特别时刻", "其他"], "concept_reaction": "听起来有点麻烦", "ritual": "精心构图、调参数、灯光线", "interview": "不太方便参加", "name": ""}, {"age": "36-45岁", "gender": "男", "devices": ["手机"], "film_exp": "从没用过，但挺好奇的", "instant_exp": "从没用过，但挺好奇的", "filter_freq": "从未使用过", "purchased": ["潮玩相机（如柯达钥匙圈相机）"], "share_freq": "偶尔分享（每月几次）", "platforms": ["抖音"], "photo_attitude": "基本都是随手记录", "phone_not_enough": "好像有过几次", "scenes": ["日常遛狗、带娃"], "concept_reaction": "有点好奇，但不确定自己会不会用", "ritual": "精心构图、调参数、灯光线", "interview": "不太方便参加", "name": ""}, {"age": "18-25岁", "gender": "男", "devices": ["手机"], "film_exp": "从没用过，但挺好奇的", "instant_exp": "用过，但已经不用了", "filter_freq": "很少使用（装过但很少打开）", "purchased": ["以上都没有"], "share_freq": "几乎不分享", "platforms": [], "photo_attitude": "基本都是随手记录", "phone_not_enough": "经常有这种感觉", "scenes": ["和朋友City Walk、探店、打卡网红点", "朋友聚会、生日派对等", "演唱会、音乐节等", "旅行中的特别时刻", "户外徒步、露营活动"], "concept_reaction": "听起来有点麻烦", "ritual": "不追求完美，但每次快门都经过思考", "interview": "不太方便参加", "name": ""}, {"age": "26-35岁", "gender": "女", "devices": ["手机", "运动相机（GoPro、大疆等）"], "film_exp": "从没用过，也不太感兴趣", "instant_exp": "从没用过，也不太感兴趣", "filter_freq": "很少使用（装过但很少打开）", "purchased": ["以上都没有"], "share_freq": "偶尔分享（每月几次）", "platforms": ["小红书"], "photo_attitude": "基本都是随手记录", "phone_not_enough": "偶尔有", "scenes": ["看展、逛博物馆等", "户外徒步、露营活动"], "concept_reaction": "有点好奇，但不确定自己会不会用", "ritual": "不追求完美，但每次快门都经过思考", "interview": "不太方便参加", "name": ""}, {"age": "26-35岁", "gender": "男", "devices": ["手机", "专业数码相机（微单、单反）"], "film_exp": "从没用过，但挺好奇的", "instant_exp": "从没用过，但挺好奇的", "filter_freq": "从未使用过", "purchased": ["以上都没有"], "share_freq": "偶尔分享（每月几次）", "platforms": ["小红书", "抖音", "微信朋友圈"], "photo_attitude": "大部分是随手记录，偶尔想认真拍", "phone_not_enough": "经常有这种感觉", "scenes": ["旅行中的特别时刻", "一个人逛街", "日常遛狗、带娃"], "concept_reaction": "有点好奇，但不确定自己会不会用", "ritual": "拍完立刻拿到实体照片", "interview": "不太方便参加", "name": ""}, {"age": "18-25岁", "gender": "女", "devices": ["手机", "拍立得", "情怀、潮玩相机（CCD、潮玩类）", "胶卷相机"], "film_exp": "是，现在还在用", "instant_exp": "是，现在还在用", "filter_freq": "很少使用（装过但很少打开）", "purchased": ["富士拍立得", "CCD相机"], "share_freq": "偶尔分享（每月几次）", "platforms": ["小红书", "微信朋友圈", "抖音", "微博", "Instagram"], "photo_attitude": "大部分是随手记录，偶尔想认真拍", "phone_not_enough": "偶尔有", "scenes": ["和朋友City Walk、探店、打卡网红点", "一个人逛街", "看展、逛博物馆等", "旅行中的特别时刻"], "concept_reaction": "听起来有点麻烦", "ritual": "不追求完美，但每次快门都经过思考", "interview": "可以参加，但要看具体时间", "name": "朱语婷"}, {"age": "36-45岁", "gender": "女", "devices": ["手机"], "film_exp": "用过，但已经不用了", "instant_exp": "用过，但已经不用了", "filter_freq": "经常使用（每周至少几次）", "purchased": ["富士拍立得"], "share_freq": "经常分享（每周几次）", "platforms": ["微信朋友圈", "抖音"], "photo_attitude": "基本都是随手记录", "phone_not_enough": "偶尔有", "scenes": ["旅行中的特别时刻", "户外徒步、露营活动", "和朋友City Walk、探店、打卡网红点", "日常遛狗、带娃"], "concept_reaction": "听起来有点麻烦", "ritual": "精心构图、调参数、灯光线", "interview": "可以参加，但要看具体时间", "name": "王莉"}, {"age": "18-25岁", "gender": "女", "devices": ["手机", "专业数码相机（微单、单反）", "拍立得", "情怀、潮玩相机（CCD、潮玩类）", "胶卷相机"], "film_exp": "是，现在还在用", "instant_exp": "是，现在还在用", "filter_freq": "很少使用（装过但很少打开）", "purchased": ["富士拍立得", "CCD相机"], "share_freq": "偶尔分享（每月几次）", "platforms": ["小红书", "微信朋友圈", "抖音"], "photo_attitude": "大部分想认真拍，偶尔随手记录", "phone_not_enough": "偶尔有", "scenes": ["校园日常、宿舍生活", "旅行中的特别时刻", "户外徒步、露营活动"], "concept_reaction": "有点好奇，但不确定自己会不会用", "ritual": "不追求完美，但每次快门都经过思考", "interview": "不太方便参加", "name": ""}, {"age": "26-35岁", "gender": "男", "devices": ["手机", "专业数码相机（微单、单反）", "拍立得"], "film_exp": "用过，但已经不用了", "instant_exp": "是，现在还在用", "filter_freq": "经常使用（每周至少几次）", "purchased": ["富士拍立得"], "share_freq": "经常分享（每周几次）", "platforms": ["小红书", "微信朋友圈"], "photo_attitude": "大部分想认真拍，偶尔随手记录", "phone_not_enough": "偶尔有", "scenes": ["一个人逛街", "看展、逛博物馆等", "旅行中的特别时刻", "日常遛狗、带娃"], "concept_reaction": "很有意思，想试试", "ritual": "不追求完美，但每次快门都经过思考", "interview": "很想参加", "name": "王衎"}, {"age": "36-45岁", "gender": "男", "devices": ["手机"], "film_exp": "用过，但已经不用了", "instant_exp": "从没用过，但挺好奇的", "filter_freq": "很少使用（装过但很少打开）", "purchased": ["以上都没有"], "share_freq": "几乎不分享", "platforms": [], "photo_attitude": "基本都是随手记录", "phone_not_enough": "好像有过几次", "scenes": ["看展、逛博物馆等", "旅行中的特别时刻", "日常遛狗、带娃"], "concept_reaction": "听起来有点麻烦", "ritual": "不追求完美，但每次快门都经过思考", "interview": "不太方便参加", "name": ""}, {"age": "36-45岁", "gender": "女", "devices": ["手机"], "film_exp": "用过，但已经不用了", "instant_exp": "用过，但已经不用了", "filter_freq": "偶尔使用（每月几次）", "purchased": ["以上都没有"], "share_freq": "几乎不分享", "platforms": [], "photo_attitude": "基本都是随手记录", "phone_not_enough": "从没有过，手机拍照挺好的", "scenes": ["和朋友City Walk、探店、打卡网红点", "朋友聚会、生日派对等", "演唱会、音乐节等", "旅行中的特别时刻", "户外徒步、露营活动"], "concept_reaction": "完全不感兴趣", "ritual": "精心构图、调参数、灯光线", "interview": "可以参加，但要看具体时间", "name": "徐铃杰"}, {"age": "18-25岁", "gender": "女", "devices": ["手机"], "film_exp": "从没用过，但挺好奇的", "instant_exp": "用过，但已经不用了", "filter_freq": "从未使用过", "purchased": ["以上都没有"], "share_freq": "几乎不分享", "platforms": [], "photo_attitude": "基本都是随手记录", "phone_not_enough": "偶尔有", "scenes": ["一个人逛街", "旅行中的特别时刻", "户外徒步、露营活动", "日常遛狗、带娃"], "concept_reaction": "听起来有点麻烦", "ritual": "拍照不需要仪式感，快速记录就行", "interview": "可以参加，但要看具体时间", "name": "顾魏怡"}];
+
+// ============================================================
+// STATE
+// ============================================================
+let currentFilter = 'all'; // 'all' | 'willing' | 'maybe' | 'unlikely'
+
+// ============================================================
+// INIT
+// ============================================================
+(function init() {
+    document.getElementById('respCount').textContent = SURVEY_DATA.length + ' 份回答 · 2025年';
+    renderDashboard();
+})();
+
+// ============================================================
+// FILTER
+// ============================================================
+function getFilteredData() {
+    if (currentFilter === 'all') return SURVEY_DATA;
+    return SURVEY_DATA.filter(r => {
+        if (currentFilter === 'willing') return r.interview === '很想参加';
+        if (currentFilter === 'maybe') return r.interview === '可以参加，但要看具体时间';
+        if (currentFilter === 'unlikely') return r.interview === '不太方便参加';
+        return true;
+    });
+}
+
+function setFilter(f) {
+    currentFilter = f;
+    renderDashboard();
+    document.getElementById('mainContent').scrollTop = 0;
+}
+
+// ============================================================
+// RENDER
+// ============================================================
+function renderDashboard() {
+    const data = getFilteredData();
+    const html =
+        renderSummary(data) +
+        renderFilterIndicator() +
+        renderSingleTable(data, 'age', 'Q1. 年龄段', [
+            ['18-25岁', '18-25 岁'], ['26-35岁', '26-35 岁'], ['36-45岁', '36-45 岁'], ['46岁以上', '46 岁及以上']
+        ]) +
+        renderSingleTable(data, 'gender', 'Q2. 性别', [
+            ['男', '男'], ['女', '女']
+        ]) +
+        renderMultiTable(data, 'devices', 'Q3. 拍照设备（多选）', [
+            ['手机', '手机'], ['专业数码相机（微单、单反）', '专业数码相机'],
+            ['拍立得', '拍立得'], ['情怀、潮玩相机（CCD、潮玩类）', 'CCD/潮玩相机'],
+            ['胶卷相机', '胶卷相机'], ['运动相机（GoPro、大疆等）', '运动相机']
+        ]) +
+        renderSingleTable(data, 'film_exp', 'Q4. 胶卷相机经历', [
+            ['是，现在还在用', '现在还在用'], ['用过，但已经不用了', '用过但不用了'],
+            ['从没用过，但挺好奇的', '没用过但好奇'], ['从没用过，也不太感兴趣', '没用过也不感兴趣']
+        ]) +
+        renderSingleTable(data, 'instant_exp', 'Q5. 拍立得经历', [
+            ['是，现在还在用', '现在还在用'], ['用过，但已经不用了', '用过但不用了'],
+            ['从没用过，但挺好奇的', '没用过但好奇'], ['从没用过，也不太感兴趣', '没用过也不感兴趣']
+        ]) +
+        renderSingleTable(data, 'filter_freq', 'Q6. 滤镜/胶片模拟 App 使用频率', [
+            ['经常使用（每周至少几次）', '经常使用'], ['偶尔使用（每月几次）', '偶尔使用'],
+            ['很少使用（装过但很少打开）', '很少使用'], ['从未使用过', '从未使用过']
+        ]) +
+        renderMultiTable(data, 'purchased', 'Q7. 购买过的产品（多选）', [
+            ['CCD相机', 'CCD 相机'], ['潮玩相机（如柯达钥匙圈相机）', '潮玩相机'],
+            ['富士拍立得', '富士拍立得'], ['以上都没有', '以上都没有']
+        ]) +
+        renderSingleTable(data, 'share_freq', 'Q8. 社媒分享频率', [
+            ['经常分享（每周几次）', '经常分享'], ['偶尔分享（每月几次）', '偶尔分享'],
+            ['几乎不分享', '几乎不分享']
+        ]) +
+        renderMultiTable(data, 'platforms', 'Q9. 分享平台（多选）', [
+            ['微信朋友圈', '微信朋友圈'], ['小红书', '小红书'], ['抖音', '抖音'],
+            ['微博', '微博'], ['Instagram', 'Instagram'], ['其他', '其他']
+        ]) +
+        renderSingleTable(data, 'photo_attitude', 'Q10. 拍照态度：随手记录 vs 认真体验', [
+            ['基本都是随手记录', '基本都是随手记录'],
+            ['大部分是随手记录，偶尔想认真拍', '大部分随手，偶尔认真'],
+            ['差不多', '两者差不多'],
+            ['大部分想认真拍，偶尔随手记录', '大部分认真，偶尔随手'],
+            ['几乎每次都是认真对待', '几乎每次都认真']
+        ]) +
+        renderSingleTable(data, 'phone_not_enough', 'Q11. "手机少了点感觉"', [
+            ['经常有这种感觉', '经常有'], ['偶尔有', '偶尔有'],
+            ['好像有过几次', '好像有过几次'], ['从没有过，手机拍照挺好的', '从没有过']
+        ]) +
+        renderMultiTable(data, 'scenes', 'Q12. 值得"慢慢拍"的场景（多选）', [
+            ['和朋友City Walk、探店、打卡网红点', 'City Walk / 探店打卡'],
+            ['旅行中的特别时刻', '旅行中的特别时刻'],
+            ['朋友聚会、生日派对等', '朋友聚会 / 派对'],
+            ['一个人逛街', '一个人逛街'],
+            ['看展、逛博物馆等', '看展 / 博物馆'],
+            ['户外徒步、露营活动', '户外徒步 / 露营'],
+            ['演唱会、音乐节等', '演唱会 / 音乐节'],
+            ['校园日常、宿舍生活', '校园日常'],
+            ['日常遛狗、带娃', '遛狗 / 带娃'],
+            ['其他', '其他']
+        ]) +
+        renderSingleTable(data, 'concept_reaction', 'Q13. 对 AiKen 概念的第一反应', [
+            ['很有意思，想试试', '很有意思，想试试'],
+            ['有点好奇，但不确定自己会不会用', '有点好奇但不确定'],
+            ['听起来有点麻烦', '听起来有点麻烦'],
+            ['完全不感兴趣', '完全不感兴趣']
+        ]) +
+        renderSingleTable(data, 'ritual', 'Q14. 拍照仪式感理解', [
+            ['精心构图、调参数、灯光线', '精心构图调参数'],
+            ['不追求完美，但每次快门都经过思考', '每次快门经过思考'],
+            ['拍完立刻拿到实体照片', '立刻拿到实体照片'],
+            ['拍照不需要仪式感，快速记录就行', '不需要仪式感']
+        ]) +
+        renderSingleTable(data, 'interview', 'Q15. 线下访谈意愿', [
+            ['很想参加', '很想参加'], ['可以参加，但要看具体时间', '看具体时间'],
+            ['不太方便参加', '不太方便参加']
+        ]) +
+        renderContacts(data) +
+        renderInsights(data);
+
+    document.getElementById('dashboardContent').innerHTML = html;
+    bindSummaryCards();
+}
+
+// ============================================================
+// SUMMARY
+// ============================================================
+function renderSummary(data) {
+    const willing = SURVEY_DATA.filter(r => r.interview === '很想参加').length;
+    const maybe = SURVEY_DATA.filter(r => r.interview === '可以参加，但要看具体时间').length;
+    const unlikely = SURVEY_DATA.filter(r => r.interview === '不太方便参加').length;
+    const isAll = currentFilter === 'all';
+    const filtered = data.length;
+
+    return `
+    <div class="summary-row">
+        <div class="summary-card card-all${isAll ? ' active' : ''}" data-filter="all">
+            <div class="label">📋 总回答数</div>
+            <div class="value">${SURVEY_DATA.length}</div>
+            ${!isAll ? `<div class="sub">当前筛选: ${filtered} 份</div>` : ''}
+        </div>
+        <div class="summary-card card-willing${currentFilter === 'willing' ? ' active' : ''}" data-filter="willing">
+            <div class="label"><span class="tag green">很想参加</span></div>
+            <div class="value">${willing}</div>
+            <div class="sub">${(willing/SURVEY_DATA.length*100).toFixed(0)}% 占比</div>
+        </div>
+        <div class="summary-card card-maybe${currentFilter === 'maybe' ? ' active' : ''}" data-filter="maybe">
+            <div class="label"><span class="tag orange">看具体时间</span></div>
+            <div class="value">${maybe}</div>
+            <div class="sub">${(maybe/SURVEY_DATA.length*100).toFixed(0)}% 占比</div>
+        </div>
+        <div class="summary-card card-unlikely${currentFilter === 'unlikely' ? ' active' : ''}" data-filter="unlikely">
+            <div class="label"><span class="tag red">不太方便</span></div>
+            <div class="value">${unlikely}</div>
+            <div class="sub">${(unlikely/SURVEY_DATA.length*100).toFixed(0)}% 占比</div>
+        </div>
+    </div>`;
+}
+
+function renderFilterIndicator() {
+    if (currentFilter === 'all') return '';
+    const labels = { willing: '很想参加', maybe: '看具体时间', unlikely: '不太方便参加' };
+    const classes = { willing: 'green', maybe: 'orange', unlikely: 'red' };
+    const count = getFilteredData().length;
+    return `
+    <div class="filter-indicator">
+        <span class="tag ${classes[currentFilter]}">${labels[currentFilter]}</span>
+        <span>正在查看此分组的回答 — 共 ${count} 份</span>
+        <button class="clear-filter" onclick="setFilter('all')">✕ 清除筛选</button>
+    </div>`;
+}
+
+function bindSummaryCards() {
+    document.querySelectorAll('.summary-card').forEach(card => {
+        card.addEventListener('click', function() {
+            setFilter(this.dataset.filter);
+        });
+    });
+}
+
+// ============================================================
+// SINGLE CHOICE TABLE
+// ============================================================
+function renderSingleTable(data, key, title, pairs) {
+    const counts = {};
+    pairs.forEach(([raw]) => { counts[raw] = 0; });
+    data.forEach(r => {
+        const v = r[key];
+        if (v && counts[v] !== undefined) counts[v]++;
+    });
+    const maxVal = Math.max(1, ...Object.values(counts));
+    let html = `<div class="section"><div class="section-title">${title}</div>`;
+    pairs.forEach(([raw, label]) => {
+        const cnt = counts[raw] || 0;
+        const pct = data.length ? (cnt / data.length * 100).toFixed(0) : 0;
+        html += `<div class="bar-cell">
+            <div class="bar-label">${label}</div>
+            <div class="bar-track"><div class="bar-fill" style="width:${(cnt/maxVal*100)}%"></div></div>
+            <div class="bar-val">${cnt} (${pct}%)</div>
+        </div>`;
+    });
+    html += '</div>';
+    return html;
+}
+
+// ============================================================
+// MULTI CHOICE TABLE
+// ============================================================
+function renderMultiTable(data, key, title, pairs) {
+    const counts = {};
+    pairs.forEach(([raw]) => { counts[raw] = 0; });
+    data.forEach(r => {
+        const vals = r[key];
+        if (Array.isArray(vals)) {
+            vals.forEach(v => { if (counts[v] !== undefined) counts[v]++; });
+        }
+    });
+    const maxVal = Math.max(1, ...Object.values(counts));
+    let html = `<div class="section"><div class="section-title">${title}</div>`;
+    pairs.forEach(([raw, label]) => {
+        const cnt = counts[raw] || 0;
+        html += `<div class="bar-cell">
+            <div class="bar-label">${label}</div>
+            <div class="bar-track"><div class="bar-fill" style="width:${(cnt/maxVal*100)}%"></div></div>
+            <div class="bar-val">${cnt}</div>
+        </div>`;
+    });
+    html += '</div>';
+    return html;
+}
+
+// ============================================================
+// CONTACTS (compact grid)
+// ============================================================
+function renderContacts(data) {
+    const contacts = data
+        .map(r => ({
+            name: r.name && r.name !== 'nan' ? r.name : null,
+            interview: r.interview,
+            age: r.age,
+            gender: r.gender,
+            devices: r.devices,
+        }))
+        .filter(c => c.name);
+
+    if (contacts.length === 0) return '';
+
+    const avatarColors = ['#3ecf8e', '#7c9bff', '#a48bff', '#f7b955', '#e0558a', '#4dc9f6', '#ff6b6b', '#20b2aa'];
+    const willingLabel = { '很想参加': '很愿意', '可以参加，但要看具体时间': '看时间', '不太方便参加': '不方便' };
+    const wCls = { '很想参加': 'green', '可以参加，但要看具体时间': 'orange', '不太方便参加': 'red' };
+
+    let html = `<div class="section"><div class="section-title">📞 联系方式（${contacts.length} 人留下了姓名）</div>`;
+    html += '<div class="contact-grid">';
+
+    contacts.forEach((c, i) => {
+        const color = avatarColors[i % avatarColors.length];
+        const initial = c.name[0];
+        html += `
+        <div class="contact-card">
+            <div class="contact-avatar" style="background:${color}">${initial}</div>
+            <div class="contact-info">
+                <div class="name">${escapeHtml(c.name)}</div>
+                <div class="detail">${c.gender || ''} · ${c.age || ''}</div>
+            </div>
+            <div class="contact-tags">
+                <span class="tag ${wCls[c.interview] || ''}">${willingLabel[c.interview] || c.interview}</span>
+            </div>
+        </div>`;
+    });
+
+    html += '</div></div>';
+    return html;
+}
+
+// ============================================================
+// INSIGHTS (key findings)
+// ============================================================
+function renderInsights(data) {
+    const total = data.length;
+    let html = '<div class="section"><div class="section-title">🔍 关键洞察</div>';
+    html += '<table><thead><tr><th>指标</th><th>数据</th></tr></thead><tbody>';
+
+    // Q11: phone_not_enough
+    const often = data.filter(r => r.phone_not_enough === '经常有这种感觉').length;
+    const ever = data.filter(r => r.phone_not_enough === '经常有这种感觉' || r.phone_not_enough === '偶尔有').length;
+    html += `<tr><td>经常感觉"手机少了点感觉"</td><td><strong>${(often/total*100).toFixed(0)}%</strong> 经常有 | ${(ever/total*100).toFixed(0)}% 至少偶尔有</td></tr>`;
+
+    // Q13: concept reaction
+    const excited = data.filter(r => r.concept_reaction === '很有意思，想试试').length;
+    const positive = data.filter(r => r.concept_reaction === '很有意思，想试试' || r.concept_reaction === '有点好奇，但不确定自己会不会用').length;
+    html += `<tr><td>对 AiKen 概念"想试试"</td><td><strong>${(excited/total*100).toFixed(0)}%</strong> 很有意思 | ${(positive/total*100).toFixed(0)}% 正面态度</td></tr>`;
+
+    // Q14: ritual — "thoughtful" closest to AiKen
+    const thoughtful = data.filter(r => r.ritual === '不追求完美，但每次快门都经过思考').length;
+    html += `<tr><td>仪式感理解 = "每次快门经过思考"</td><td><strong>${(thoughtful/total*100).toFixed(0)}%</strong> 与 AiKen 设计吻合</td></tr>`;
+
+    // Q4 + Q6 cross: film curious + filter user
+    const filmCurious = data.filter(r => r.film_exp === '从没用过，但挺好奇的').length;
+    const filterUsers = data.filter(r => r.filter_freq !== '从未使用过').length;
+    html += `<tr><td>胶片好奇者（没用过但好奇）</td><td><strong>${(filmCurious/total*100).toFixed(0)}%</strong> (${filmCurious}人)</td></tr>`;
+    html += `<tr><td>滤镜 App 使用者</td><td><strong>${(filterUsers/total*100).toFixed(0)}%</strong> (${filterUsers}人)</td></tr>`;
+
+    // Interview stats
+    const willingAll = SURVEY_DATA.filter(r => r.interview === '很想参加').length;
+    const maybeAll = SURVEY_DATA.filter(r => r.interview === '可以参加，但要看具体时间').length;
+    const canInterview = willingAll + maybeAll;
+    html += `<tr><td>可触达访谈人数</td><td><strong>${canInterview}</strong> 人（很想 ${willingAll} + 看时间 ${maybeAll}）</td></tr>`;
+
+    html += '</tbody></table></div>';
+    return html;
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function escapeHtml(s) {
+    return String(s || '').replace(/[&<>"']/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
+}
+</script>
+</body>
+</html>
