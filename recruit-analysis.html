@@ -65,6 +65,12 @@ body { display:flex; flex-direction:column; }
 .section-title { font-size:15px; font-weight:600; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
 .section-title::before { content:''; width:3px; height:16px; background:var(--accent); border-radius:2px; flex-shrink:0; }
 
+/* Chart grid layout */
+.chart-grid { display:grid; grid-template-columns:repeat(2, 1fr); gap:20px; margin-bottom:20px; }
+.chart-grid .section { margin-bottom:0; }
+.chart-grid .section-title { font-size:14px; }
+@media (max-width: 800px) { .chart-grid { grid-template-columns:1fr; } }
+
 /* Bar chart */
 .bar-cell { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
 .bar-label { width:190px; flex-shrink:0; text-align:right; font-size:12px; color:var(--text-soft); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -145,6 +151,7 @@ tr:hover td { background:rgba(255,255,255,0.02); }
     <h1>AiKen 新品调研 · 数据分析看板</h1>
     <div class="toolbar-right">
         <span class="meta" id="respCount">—</span>
+        <a href="aiken-insight.html" class="btn-back">📊 洞察报告</a>
         <a href="recruit-admin.html" class="btn-back">← 实时看板</a>
     </div>
 </div>
@@ -224,23 +231,24 @@ function renderNavTabs() {
 // ============================================================
 function renderOverview() {
     const data = getFilteredData();
+    const g = (items) => `<div class="chart-grid">${items}</div>`;
     return renderSummaryCards(data) +
         renderFilterIndicator() +
-        renderSingleTable(data, 'age', 'Q1. 年龄段', 'age', [['18-25岁','18-25 岁'],['26-35岁','26-35 岁'],['36-45岁','36-45 岁'],['46岁以上','46 岁及以上']], 'age') +
-        renderSingleTable(data, 'gender', 'Q2. 性别', 'gender', [['男','男'],['女','女']], 'gender') +
-        renderMultiTable(data, 'devices', 'Q3. 拍照设备（多选）', 'devices', [['手机','手机'],['专业数码相机（微单、单反）','专业数码相机'],['拍立得','拍立得'],['情怀、潮玩相机（CCD、潮玩类）','CCD/潮玩相机'],['胶卷相机','胶卷相机'],['运动相机（GoPro、大疆等）','运动相机']], 'devices') +
-        renderSingleTable(data, 'film_exp', 'Q4. 胶卷相机经历', 'film_exp', [['是，现在还在用','现在还在用'],['用过，但已经不用了','用过但不用了'],['从没用过，但挺好奇的','没用过但好奇'],['从没用过，也不太感兴趣','没用过也不感兴趣']], 'film_exp') +
-        renderSingleTable(data, 'instant_exp', 'Q5. 拍立得经历', 'instant_exp', [['是，现在还在用','现在还在用'],['用过，但已经不用了','用过但不用了'],['从没用过，但挺好奇的','没用过但好奇'],['从没用过，也不太感兴趣','没用过也不感兴趣']], 'instant_exp') +
-        renderSingleTable(data, 'filter_freq', 'Q6. 滤镜/胶片模拟 App 使用频率', 'filter_freq', [['经常使用（每周至少几次）','经常使用'],['偶尔使用（每月几次）','偶尔使用'],['很少使用（装过但很少打开）','很少使用'],['从未使用过','从未使用过']], 'filter_freq') +
-        renderMultiTable(data, 'purchased', 'Q7. 购买过的产品（多选）', 'purchased', [['CCD相机','CCD 相机'],['潮玩相机（如��达钥匙圈相机）','潮玩相机'],['富士拍立得','富士拍立得'],['以上都没有','以上都没有']], 'purchased') +
-        renderSingleTable(data, 'share_freq', 'Q8. 社媒分享频率', 'share_freq', [['经常分享（每周几次）','经常分享'],['偶尔分享（每月几次）','偶尔分享'],['几乎不分享','几乎不分享']], 'share_freq') +
-        renderMultiTable(data, 'platforms', 'Q9. 分享平台（多选）', 'platforms', [['微信朋友圈','微信朋友圈'],['小红书','小红书'],['抖音','抖音'],['微博','微博'],['Instagram','Instagram'],['其他','其他']], 'platforms') +
-        renderSingleTable(data, 'photo_attitude', 'Q10. 拍照态度', 'photo_attitude', [['基本都是随手记录','基本都是随手记录'],['大部分是随手记录，偶尔想认真拍','大部分随手，偶尔认真'],['差不多','两者差不多'],['大部分想认真拍，偶尔随手记录','大部分认真，偶尔随手'],['几乎每次都是认真对待','几乎每次都认真']], 'photo_attitude') +
-        renderSingleTable(data, 'phone_not_enough', 'Q11. "手机少了点感觉"', 'phone_not_enough', [['经常有这种感觉','经常有'],['偶尔有','偶尔有'],['好像有过几次','好像有过几次'],['从没有过，手机拍照挺好的','从没有过']], 'phone_not_enough') +
-        renderMultiTable(data, 'scenes', 'Q12. 值得"慢慢拍"的场景（多选）', 'scenes', [['和朋友City Walk、探店、打卡网红点','City Walk / 探店'],['旅行中的特别时刻','旅行中的特别时刻'],['朋友聚会、生日派对等','朋友聚会 / 派对'],['一个人逛街','一个人逛街'],['看展、逛博物馆等','看展 / 博物馆'],['户外徒步、露营活动','户外徒步 / 露营'],['演唱会、音乐节等','演唱会 / 音乐节'],['校园日常、宿舍生活','校园日常'],['日常遛狗、带娃','遛狗 / 带娃'],['其他','其他']], 'scenes') +
-        renderSingleTable(data, 'concept_reaction', 'Q13. 对 AiKen 概念的第一反应', 'concept_reaction', [['很有意思，想试试','很有意思，想试试'],['有点好奇，但不确定自己会不会用','有点好奇但不确定'],['听起来有点麻烦','听起来有点麻烦'],['完全不感兴趣','完全不感兴趣']], 'concept_reaction') +
-        renderSingleTable(data, 'ritual', 'Q14. 拍照仪式感理解', 'ritual', [['精心构图、调参数、灯光线','精心构图调参数'],['不追求完美，但每次快门都经过思考','每次快门经过思考'],['拍完立刻拿到实体照片','立刻拿到实体照片'],['拍照不需要仪式感，快速记录就行','不需要仪式感']], 'ritual') +
-        renderSingleTable(data, 'interview', 'Q15. 线下访谈意愿', 'interview', [['很想参加','很想参加'],['可以参加，但要看具体时间','看具体时间'],['不太方便参加','不太方便参加']], 'interview') +
+        g(renderSingleTable(data, 'age', 'Q1. 年龄段', [['18-25岁','18-25 岁'],['26-35岁','26-35 岁'],['36-45岁','36-45 岁'],['46岁以上','46 岁及以上']], 'age') +
+           renderSingleTable(data, 'gender', 'Q2. 性别', [['男','男'],['女','女']], 'gender')) +
+        renderMultiTable(data, 'devices', 'Q3. 拍照设备（多选）', [['手机','手机'],['专业数码相机（微单、单反）','专业数码相机'],['拍立得','拍立得'],['情怀、潮玩相机（CCD、潮玩类）','CCD/潮玩相机'],['胶卷相机','胶卷相机'],['运动相机（GoPro、大疆等）','运动相机']], 'devices') +
+        g(renderSingleTable(data, 'film_exp', 'Q4. 胶卷相机经历', [['是，现在还在用','现在还在用'],['用过，但已经不用了','用过但不用了'],['从没用过，但挺好奇的','没用过但好奇'],['从没用过，也不太感兴趣','没用过也不感兴趣']], 'film_exp') +
+           renderSingleTable(data, 'instant_exp', 'Q5. 拍立得经历', [['是，现在还在用','现在还在用'],['用过，但已经不用了','用过但不用了'],['从没用过，但挺好奇的','没用过但好奇'],['从没用过，也不太感兴趣','没用过也不感兴趣']], 'instant_exp')) +
+        g(renderSingleTable(data, 'filter_freq', 'Q6. 滤镜/胶片模拟 App 使用频率', [['经常使用（每周至少几次）','经常使用'],['偶尔使用（每月几次）','偶尔使用'],['很少使用（装过但很少打开）','很少使用'],['从未使用过','从未使用过']], 'filter_freq') +
+           renderSingleTable(data, 'share_freq', 'Q8. 社媒分享频率', [['经常分享（每周几次）','经常分享'],['偶尔分享（每月几次）','偶尔分享'],['几乎不分享','几乎不分享']], 'share_freq')) +
+        renderMultiTable(data, 'purchased', 'Q7. 购买过的产品（多选）', [['CCD相机','CCD 相机'],['潮玩相机（如柯达钥匙圈相机）','潮玩相机'],['富士拍立得','富士拍立得'],['以上都没有','以上都没有']], 'purchased') +
+        renderMultiTable(data, 'platforms', 'Q9. 分享平台（多选）', [['微信朋友圈','微信朋友圈'],['小红书','小红书'],['抖音','抖音'],['微博','微博'],['Instagram','Instagram'],['其他','其他']], 'platforms') +
+        g(renderSingleTable(data, 'photo_attitude', 'Q10. 拍照态度', [['基本都是随手记录','基本都是随手记录'],['大部分是随手记录，偶尔想认真拍','大部分随手，偶尔认真'],['差不多','两者差不多'],['大部分想认真拍，偶尔随手记录','大部分认真，偶尔随手'],['几乎每次都是认真对待','几乎每次都认真']], 'photo_attitude') +
+           renderSingleTable(data, 'phone_not_enough', 'Q11. "手机少了点感觉"', [['经常有这种感觉','经常有'],['偶尔有','偶尔有'],['好像有过几次','好像有过几次'],['从没有过，手机拍照挺好的','从没有过']], 'phone_not_enough')) +
+        renderMultiTable(data, 'scenes', 'Q12. 值得"慢慢拍"的场景（多选）', [['和朋友City Walk、探店、打卡网红点','City Walk / 探店'],['旅行中的特别时刻','旅行中的特别时刻'],['朋友聚会、生日派对等','朋友聚会 / 派对'],['一个人逛街','一个人逛街'],['看展、逛博物馆等','看展 / 博物馆'],['户外徒步、露营活动','户外徒步 / 露营'],['演唱会、音乐节等','演唱会 / 音乐节'],['校园日常、宿舍生活','校园日常'],['日常遛狗、带娃','遛狗 / 带娃'],['其他','其他']], 'scenes') +
+        g(renderSingleTable(data, 'concept_reaction', 'Q13. 对 AiKen 概念的第一反应', [['很有意思，想试试','很有意思，想试试'],['有点好奇，但不确定自己会不会用','有点好奇但不确定'],['听起来有点麻烦','听起来有点麻烦'],['完全不感兴趣','完全不感兴趣']], 'concept_reaction') +
+           renderSingleTable(data, 'ritual', 'Q14. 拍照仪式感理解', [['精心构图、调参数、灯光线','精心构图调参数'],['不追求完美，但每次快门都经过思考','每次快门经过思考'],['拍完立刻拿到实体照片','立刻拿到实体照片'],['拍照不需要仪式感，快速记录就行','不需要仪式感']], 'ritual')) +
+        renderSingleTable(data, 'interview', 'Q15. 线下访谈意愿', [['很想参加','很想参加'],['可以参加，但要看具体时间','看具体时间'],['不太方便参加','不太方便参加']], 'interview') +
         renderContacts(data) +
         renderInsights(data);
 }
