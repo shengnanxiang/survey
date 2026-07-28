@@ -305,15 +305,19 @@
             position: fixed;
             bottom: 16px;
             right: 16px;
-            font-size: 11px;
-            color: var(--text-dim);
+            font-size: 12px;
+            color: var(--accent);
             cursor: pointer;
             text-decoration: none;
             z-index: 100;
-            opacity: 0.4;
-            transition: opacity 0.2s;
+            opacity: 0.85;
+            padding: 6px 14px;
+            border-radius: 6px;
+            background: rgba(255,159,67,0.1);
+            border: 1px solid rgba(255,159,67,0.3);
+            transition: all 0.2s;
         }
-        .admin-link:hover { opacity: 1; }
+        .admin-link:hover { opacity: 1; background: rgba(255,159,67,0.2); border-color: var(--accent); }
 
         /* Admin modal */
         .admin-modal {
@@ -1128,36 +1132,9 @@ const adminCancel = document.getElementById('adminCancel');
 const adminConfirm = document.getElementById('adminConfirm');
 
 adminLink.addEventListener('click', () => {
-    adminModal.classList.add('visible');
-    adminPassword.value = '';
-    adminError.style.display = 'none';
-    setTimeout(() => adminPassword.focus(), 100);
-});
-
-function closeAdminModal() {
-    adminModal.classList.remove('visible');
-}
-
-adminCancel.addEventListener('click', closeAdminModal);
-adminModal.addEventListener('click', (e) => {
-    if (e.target === adminModal) closeAdminModal();
-});
-
-adminConfirm.addEventListener('click', () => {
-    if (adminPassword.value === atob('Zmx5bWV0dG0=')) {
-        closeAdminModal();
-        window.open('recruit-admin.html', '_blank');
-        window.open('recruit-analysis.html', '_blank');
-        window.open('aiken-insight.html', '_blank');
-    } else {
-        adminError.style.display = 'block';
-        adminPassword.value = '';
-        adminPassword.focus();
-    }
-});
-
-adminPassword.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') adminConfirm.click();
+    window.open('recruit-admin.html', '_blank');
+    window.open('recruit-analysis.html', '_blank');
+    window.open('aiken-insight.html', '_blank');
 });
 </script>
 
