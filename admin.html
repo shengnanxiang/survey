@@ -144,14 +144,14 @@ let GITHUB_TOKEN = ''; // Public repo — no token needed for read access
 let allResponses = [];
 const REPO = 'shengnanxiang/survey';
 
-// ---- Style config (must match survey.html) ----
+// ---- Style config (must match lutpreference.html) ----
 const STYLE_MAP = {
-    'kodak-gold': { name: '浓郁美式', color: '#f39c12', cls: 'gold' },
-    'fuji-c200':  { name: '清新日系', color: '#00b894', cls: 'cyan' },
-    'ilford-hp5': { name: '经典黑白', color: '#95a5a6', cls: 'gray' },
-    'xpro':       { name: '交叉冲洗', color: '#e84393', cls: 'pink' },
-    'cyanotype':  { name: '传统蓝晒', color: '#3498db', cls: 'blue' },
-    'cyberpunk':  { name: '未来怀旧', color: '#9b59b6', cls: 'purple' },
+    'BL': { name: 'BL', color: '#f39c12', cls: 'gold' },
+    'CQ': { name: 'CQ', color: '#00b894', cls: 'cyan' },
+    'DY': { name: 'DY', color: '#95a5a6', cls: 'gray' },
+    'FS': { name: 'FS', color: '#e84393', cls: 'pink' },
+    'JC': { name: 'JC', color: '#3498db', cls: 'blue' },
+    'PB': { name: 'PB', color: '#9b59b6', cls: 'purple' },
 };
 
 const SCENE_MAP = {
@@ -355,7 +355,7 @@ function renderPreferenceSection() {
         if (val) dirCount[val] = (dirCount[val] || 0) + 1;
     });
     html += '<div class="section"><div class="section-title">风格方向偏好</div><div class="table-wrap"><table><thead><tr><th>方向</th><th>人数</th></tr></thead><tbody>';
-    const dirLabels = { traditional: '传统胶卷感', experimental: '艺术实验感', both: '都喜欢', neither: '都不太喜欢' };
+    const dirLabels = { traditional: '整体偏柔和/经典的方向', experimental: '整体偏鲜明/实验的方向', both: '都喜欢', neither: '都不太喜欢' };
     Object.entries(dirLabels).forEach(([k,v]) => {
         html += '<tr><td>' + v + '</td><td>' + (dirCount[k] || 0) + '</td></tr>';
     });
