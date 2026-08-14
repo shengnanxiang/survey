@@ -208,6 +208,31 @@ h3.sub-title::after{content:'';display:block;width:60px;height:6px;background:va
 .insight-card .ic-evidence{font-size:13px;color:var(--gray);font-style:italic;padding:10px 14px;background:var(--paper);border-left:4px solid var(--accent);font-weight:700}
 .insight-card .ic-tag{font-size:11px;padding:3px 10px;border:2px solid var(--ink);background:var(--paper-dark);color:var(--ink);font-weight:900;letter-spacing:.04em}
 
+/* ---------- 假设验证卡片 ---------- */
+.hypo-card{background:#fff;border:3px solid var(--ink);padding:22px 26px;margin-bottom:16px;box-shadow:6px 6px 0 rgba(0,0,0,.12);border-top:8px solid var(--accent)}
+.hypo-card .hypo-header{display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.hypo-card .hypo-id{font-size:15px;padding:4px 12px;background:var(--ink);color:#fff;font-weight:900;font-family:var(--font-display);letter-spacing:.04em;border:2px solid var(--ink)}
+.hypo-card .hypo-name{font-size:17px;font-weight:900;color:var(--ink);flex:1;min-width:220px;line-height:1.4}
+.hypo-card .hypo-conclusion{font-size:15px;color:var(--ink-2);line-height:1.75;margin-bottom:12px;font-weight:700;padding:12px 16px;background:var(--paper);border-left:5px solid var(--accent)}
+.hypo-card .hypo-block{margin-top:10px}
+.hypo-card .hypo-label{font-size:11px;color:var(--gray);font-weight:900;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;font-family:var(--font-mono)}
+.hypo-card .hypo-label.oppose{color:var(--danger)}
+.hypo-card .quote-block{margin-bottom:6px}
+.hypo-card .quote-block:last-child{margin-bottom:0}
+/* 假设徽章（洞察卡片头部） */
+.hypo-chip{font-size:11px;padding:3px 10px;border:2px solid var(--accent);background:var(--accent);color:#fff;font-weight:900;letter-spacing:.06em}
+
+/* ---------- 亲和图 ---------- */
+.aff-cluster{background:#fff;border:3px solid var(--ink);padding:20px 24px;margin-bottom:18px;box-shadow:6px 6px 0 rgba(0,0,0,.12)}
+.aff-cluster .aff-head{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.aff-cluster .aff-id{font-size:15px;padding:4px 12px;background:var(--ink);color:#fff;font-weight:900;font-family:var(--font-display);border:2px solid var(--ink)}
+.aff-cluster .aff-title{font-size:18px;font-weight:900;color:var(--ink);flex:1;min-width:220px;font-family:var(--font-display);letter-spacing:.02em;line-height:1.35}
+.aff-cluster .aff-notes{display:grid;grid-template-columns:1fr;gap:6px;margin-bottom:12px}
+.aff-note{display:flex;gap:10px;align-items:baseline;background:var(--paper-dark);padding:9px 14px;font-size:14px;color:var(--ink-2);font-weight:700;border-left:4px solid var(--warn)}
+.aff-note .aff-who{font-weight:900;color:var(--ink);white-space:nowrap;font-family:var(--font-mono);font-size:12px;letter-spacing:.03em}
+.aff-note .aff-quote{font-style:italic}
+.aff-cluster .aff-takeaway{font-size:14px;color:var(--ink);line-height:1.7;padding:12px 14px;background:var(--paper);border-left:5px solid var(--success);font-weight:800}
+
 </style>
 </head>
 <body>

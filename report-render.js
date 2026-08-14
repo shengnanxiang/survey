@@ -27,6 +27,31 @@ function renderOverview() {
   html += '<div class="summary-card card-neg"><div class="label">消极态度</div><div class="value">' + neg + '</div><div class="sub">' + Math.round(neg/total*100) + '% 的受访者</div></div>';
   html += '</div>';
 
+  // 调研目的：三个核心假设与验证闭环
+  html += '<h3 class="sub-title">调研目的：验证三个核心假设</h3>';
+  html += '<div class="callout"><strong>本次调研的首要目的</strong> — ' + HYPOTHESES.intro + '</div>';
+
+  HYPOTHESES.items.forEach(function(h) {
+    var vCls = h.cls === 'pos' ? 'priority-P0' : (h.cls === 'warn' ? 'priority-P1' : 'priority-P3');
+    var vIcon = h.cls === 'pos' ? '✓ 成立' : (h.cls === 'warn' ? '▲ 部分成立' : '✗ 不成立');
+    html += '<div class="hypo-card">';
+    html += '<div class="hypo-header"><span class="hypo-id">' + h.id + '</span><span class="hypo-name">' + h.name + '</span><span class="priority-badge ' + vCls + '">' + vIcon + '</span></div>';
+    html += '<div class="hypo-conclusion"><strong>验证结论</strong> — ' + h.conclusion + '</div>';
+    if (h.support.length > 0) {
+      html += '<div class="hypo-block"><div class="hypo-label">支持依据</div>';
+      h.support.forEach(function(q) { html += '<div class="quote-block">' + q + '</div>'; });
+      html += '</div>';
+    }
+    if (h.oppose.length > 0) {
+      html += '<div class="hypo-block"><div class="hypo-label">反证依据</div>';
+      h.oppose.forEach(function(q) { html += '<div class="quote-block">' + q + '</div>'; });
+      html += '</div>';
+    }
+    html += '</div>';
+  });
+
+  html += '<div class="callout"><strong>闭环结论</strong> — ' + HYPOTHESES.closure + '</div>';
+
   // 用户分群（一行三列）
   html += '<h3 class="sub-title">用户分群</h3>';
   html += '<p>基于访谈反馈，10位受访者可清晰分为三类人群。分群依据：对机械交互的认同度、价格预期、使用场景偏好。<strong>姓名色块对应其访谈态度</strong>（绿=积极 · 橙=中性 · 红=消极）。详细画像见「用户画像」页。</p>';
@@ -68,13 +93,50 @@ function renderInsights() {
   html += '<div class="section-title">核心洞察</div>';
   html += '<div class="section-desc">基于10位受访者深度访谈，提炼7条核心洞察，覆盖产品定位、定价策略与体验设计。用户画像详见「用户画像」页。</div>';
 
-  // 7条核心洞察
+  // 7条核心洞察（每条标注对应假设）
   KEY_INSIGHTS.forEach(function(ins) {
     html += '<div class="insight-card">';
-    html += '<div class="ic-header"><span class="ic-num">' + ins.id + '</span><span class="ic-title">' + ins.title + '</span><span class="ic-tag">' + ins.tag + '</span></div>';
+    html += '<div class="ic-header"><span class="ic-num">' + ins.id + '</span><span class="ic-title">' + ins.title + '</span><span class="ic-tag">' + ins.tag + '</span><span class="hypo-chip">' + ins.hypo + '</span></div>';
     html += '<div class="ic-desc">' + ins.desc + '</div>';
     html += '<div class="ic-evidence">证据: ' + ins.evidence + '</div>';
     html += '</div>';
+  });
+
+  // 亲和图重新分析（Affinity Diagram）
+  html += '<div class="divider"></div>';
+  html += '<h3 class="sub-title">亲和图重新分析（Affinity Diagram）</h3>';
+  html += '<p>以下用亲和图方法对本次访谈的全部原始记录重新做定性分析：把用户说过的每一句有价值的话当作一张 sticky note，先逐句提取，再归类、聚类、归纳，最终形成一簇簇核心洞察。之后与上述「核心洞察」逐条对比，说明差异。</p>';
+  AFFINITY.method.forEach(function(m) {
+    html += '<div class="insight-box"><ul><li>' + m + '</li></ul></div>';
+  });
+
+  AFFINITY.clusters.forEach(function(c) {
+    html += '<div class="aff-cluster">';
+    html += '<div class="aff-head"><span class="aff-id">' + c.id + '</span><span class="aff-title">' + c.title + '</span><span class="hypo-chip">' + c.hypo + '</span></div>';
+    html += '<div class="aff-notes">';
+    c.notes.forEach(function(n) {
+      var parts = n.split(': ');
+      html += '<div class="aff-note"><span class="aff-who">' + parts[0] + '</span><span class="aff-quote">' + parts.slice(1).join(': ') + '</span></div>';
+    });
+    html += '</div>';
+    html += '<div class="aff-takeaway"><strong>归纳</strong> — ' + c.takeaway + '</div>';
+    html += '</div>';
+  });
+
+  // 亲和图 vs 现有核心洞察
+  html += '<h3 class="sub-title">亲和图结论 vs 现有核心洞察：差异对比</h3>';
+  html += '<p>逐条对比现有 7 条核心洞察与亲和图 8 簇的对应关系、一致点与差异点。</p>';
+  html += '<div class="table-wrap"><table><thead><tr><th>现有核心洞察</th><th>亲和图对应簇</th><th>差异说明</th></tr></thead><tbody>';
+  AFFINITY.comparison.forEach(function(cmp) {
+    html += '<tr><td><strong>' + cmp.existing + '</strong></td><td>' + cmp.affinity + '</td><td>' + cmp.diff + '</td></tr>';
+  });
+  html += '</tbody></table></div>';
+
+  // 亲和图独有的新发现
+  html += '<h3 class="sub-title">亲和图独有的新发现</h3>';
+  html += '<p>以下 4 条是亲和图分析中暴露、但现有「核心洞察」未单独呈现的发现：</p>';
+  AFFINITY.newFindings.forEach(function(f) {
+    html += '<div class="insight-box"><ul><li>' + f + '</li></ul></div>';
   });
 
   // 功能优先级矩阵
