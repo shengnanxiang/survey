@@ -277,7 +277,7 @@ function renderAnalysis() {
 
 // --- 初始化 ---
 function init() {
-  var main = document.getElementById('main');
+  var main = document.getElementById('main-inner');
   main.innerHTML = renderOverview() + renderInsights() + renderMerge() + renderAnalysis();
 }
 
