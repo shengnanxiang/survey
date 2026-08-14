@@ -275,10 +275,101 @@ function renderAnalysis() {
   return html;
 }
 
+// --- 态度变化（T0 问卷 × T1 访谈交叉验证） ---
+function renderAttitude() {
+  var c = ATTITUDE_CHANGE;
+  var total = c.summary.total;
+
+  function signed(n) { return n > 0 ? '+' + n : String(n); }
+
+  var html = '<div class="section" id="sec-attitude">';
+  html += '<div class="section-title">态度变化</div>';
+  html += '<div class="section-desc">T0 倾向性问卷 × T1 一对一实物体验访谈 · 按 10 位完整访谈逐人交叉验证</div>';
+
+  // 一句话结论
+  html += '<div class="callout"><strong>一句话结论</strong> — ' + c.conclusion + '</div>';
+
+  // 核心结论
+  html += '<div class="summary-row">';
+  html += '<div class="summary-card card-pos"><div class="label">态度增强 / 积极加深</div><div class="value">' + c.summary.up + '</div><div class="sub">' + Math.round(c.summary.up / total * 100) + '% 的受访者</div></div>';
+  html += '<div class="summary-card card-neu"><div class="label">整体基本稳定</div><div class="value">' + c.summary.stable + '</div><div class="sub">' + Math.round(c.summary.stable / total * 100) + '% 的受访者</div></div>';
+  html += '<div class="summary-card card-neg"><div class="label">体验后态度减弱</div><div class="value">' + c.summary.down + '</div><div class="sub">' + Math.round(c.summary.down / total * 100) + '% 的受访者</div></div>';
+  html += '</div>';
+
+  html += '<div class="callout warn"><strong>严格等级转换对照</strong> — 若只把 T0 的「想试试 / 好奇 / 麻烦 / 不感兴趣」与 T1 的「积极 / 中性 / 消极」对应，则为 ' + c.strict.up + ' 人上升、' + c.strict.stable + ' 人不变、' + c.strict.down + ' 人下降。综合访谈强度后：冯洁属于积极加深，张子璟虽仍为中性但确定性下降，因此得到 ' + c.summary.up + ' / ' + c.summary.stable + ' / ' + c.summary.down + '。</div>';
+
+  // T0 与 T1 结构变化
+  html += '<h3 class="sub-title">T0 与 T1 的结构变化</h3>';
+  html += '<div class="table-wrap"><table><thead><tr><th>阶段</th><th>积极</th><th>中性 / 好奇</th><th>负面 / 麻烦</th></tr></thead><tbody>';
+  c.structure.forEach(function(s) {
+    html += '<tr><td><strong>' + s.stage + '</strong></td><td class="att-up">' + s.pos + ' 人</td><td class="att-same">' + s.neu + ' 人</td><td class="att-down">' + s.neg + ' 人</td></tr>';
+  });
+  var d0 = c.structure[0], d1 = c.structure[1];
+  html += '<tr><td><strong>净变化</strong></td><td class="att-up">' + signed(d1.pos - d0.pos) + '</td><td class="att-same">' + signed(d1.neu - d0.neu) + '</td><td class="att-down">' + signed(d1.neg - d0.neg) + '</td></tr>';
+  html += '</tbody></table></div>';
+
+  // 逐人交叉验证
+  html += '<h3 class="sub-title">逐人交叉验证</h3>';
+  html += '<div class="table-wrap"><table><thead><tr><th>用户</th><th>T0 前期问卷</th><th>T1 体验访谈</th><th>变化</th><th>交叉验证解释</th></tr></thead><tbody>';
+  c.people.forEach(function(p) {
+    var cls = p.level === 'up' ? 'att-up' : (p.level === 'down' ? 'att-down' : 'att-same');
+    html += '<tr><td><strong>' + p.name + '</strong></td><td>' + p.t0 + '</td><td>' + p.t1 + '</td><td class="' + cls + '">' + p.change + '</td><td>' + p.explain + '</td></tr>';
+  });
+  html += '</tbody></table></div>';
+
+  // 变化是如何发生的
+  html += '<h3 class="sub-title">变化是如何发生的</h3>';
+  html += '<div class="two-col">';
+  html += '<div>';
+  html += '<div class="callout"><strong>正向转化路径</strong></div>';
+  c.positivePaths.forEach(function(t) { html += '<div class="insight-box"><ul><li>' + t + '</li></ul></div>'; });
+  html += '</div>';
+  html += '<div>';
+  html += '<div class="callout danger"><strong>负向回落路径</strong></div>';
+  c.negativePaths.forEach(function(t) { html += '<div class="insight-box"><ul><li>' + t + '</li></ul></div>'; });
+  html += '</div>';
+  html += '</div>';
+
+  // 前期胶卷关系
+  html += '<h3 class="sub-title">前期胶卷关系（9/10 已有经验或好奇）</h3>';
+  html += '<div class="table-wrap"><table><thead><tr><th>T0 胶卷关系</th><th>人数</th><th>解释</th></tr></thead><tbody>';
+  c.filmRelation.forEach(function(f) {
+    html += '<tr><td><strong>' + f.type + '</strong></td><td>' + f.count + '</td><td>' + f.explain + '</td></tr>';
+  });
+  html += '</tbody></table></div>';
+
+  // 对产品与后续研究的含义
+  html += '<h3 class="sub-title">对产品与后续研究的含义</h3>';
+  html += '<div class="insight-box"><h3>产品表达优先级</h3><ul>';
+  c.productPriorities.forEach(function(t) { html += '<li>' + t + '</li>'; });
+  html += '</ul></div>';
+  html += '<div class="table-wrap"><table><thead><tr><th>优先级</th><th>人群</th><th>主要信息</th><th>不应过度承诺</th></tr></thead><tbody>';
+  c.userStrategy.forEach(function(u) {
+    var cls = u.tier === 'P0' ? 'priority-P0' : (u.tier === 'P1' ? 'priority-P1' : 'priority-P3');
+    html += '<tr><td><span class="priority-badge ' + cls + '">' + u.tier + '</span></td><td>' + u.crowd + '</td><td>' + u.message + '</td><td>' + u.avoid + '</td></tr>';
+  });
+  html += '</tbody></table></div>';
+  html += '<div class="callout"><strong>建议用于汇报的最终表述</strong> — ' + c.finalStatement + '</div>';
+
+  // 方法说明与数据边界
+  html += '<h3 class="sub-title">方法说明与数据边界</h3>';
+  html += '<div class="insight-box"><h3>编码方法</h3><ul>';
+  c.codingMethod.forEach(function(t) { html += '<li>' + t + '</li>'; });
+  html += '</ul></div>';
+  html += '<div class="insight-box"><h3>样本与限制</h3><ul>';
+  c.limits.forEach(function(t) { html += '<li>' + t + '</li>'; });
+  html += '</ul></div>';
+
+  html += '<div class="callout warn"><strong>与既有分析的口径差异</strong> — 本页「调研×访谈」基于 12 位受访者（含徐玲杰、刘旋的部分访谈），本 Tab 按交叉验证报告执行 10 位完整访谈的逐人比较，因此统计不同：<br><br>1. <strong>刘莹</strong>：上一版判为「一致 / 无显著变化」，交叉验证按访谈强度判为「轻度增强」——她认可拉片机械反馈与解压感，仅等待仍是阻力。<br>2. <strong>统计口径</strong>：上一版为 5 上 / 5 同 / 2 下；交叉验证严格等级转换为 5 上 / 4 同 / 1 下，综合访谈强度后为 6 增强 / 2 稳定 / 2 减弱。<br>3. <strong>结论侧重</strong>：交叉验证更强调「转化的是数字化复古拍摄体验，而非胶卷介质本身」，并明确画质、36 张限制、冲扫等待、机械动作价值不足的回落风险。</div>';
+
+  html += '</div>';
+  return html;
+}
+
 // --- 初始化 ---
 function init() {
   var main = document.getElementById('main-inner');
-  main.innerHTML = renderOverview() + renderInsights() + renderMerge() + renderAnalysis();
+  main.innerHTML = renderOverview() + renderInsights() + renderMerge() + renderAttitude() + renderAnalysis();
 }
 
 init();
