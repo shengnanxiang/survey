@@ -91,24 +91,18 @@ function renderOverview() {
 function renderInsights() {
   var html = '<div class="section" id="sec-insights">';
   html += '<div class="section-title">核心洞察</div>';
-  html += '<div class="section-desc">基于10位受访者深度访谈，提炼7条核心洞察，覆盖产品定位、定价策略与体验设计。用户画像详见「用户画像」页。</div>';
+  html += '<div class="section-desc">以亲和图（Affinity Diagram）方法对全部访谈记录重新归纳：逐句提取 46 张 sticky notes、聚类为 8 簇主题。每簇均有大量用户原话支撑，颗粒度与证据强度优于原有洞察，故以此为准。用户画像详见「用户画像」页。</div>';
 
-  // 7条核心洞察（每条标注对应假设）
-  KEY_INSIGHTS.forEach(function(ins) {
-    html += '<div class="insight-card">';
-    html += '<div class="ic-header"><span class="ic-num">' + ins.id + '</span><span class="ic-title">' + ins.title + '</span><span class="ic-tag">' + ins.tag + '</span><span class="hypo-chip">' + ins.hypo + '</span></div>';
-    html += '<div class="ic-desc">' + ins.desc + '</div>';
-    html += '<div class="ic-evidence">证据: ' + ins.evidence + '</div>';
-    html += '</div>';
-  });
-
-  // 亲和图重新分析（Affinity Diagram）
+  // 方法论简介（保留简单介绍）
   html += '<div class="divider"></div>';
-  html += '<h3 class="sub-title">亲和图重新分析（Affinity Diagram）</h3>';
-  html += '<p>以下用亲和图方法对本次访谈的全部原始记录重新做定性分析：把用户说过的每一句有价值的话当作一张 sticky note，先逐句提取，再归类、聚类、归纳，最终形成一簇簇核心洞察。之后与上述「核心洞察」逐条对比，说明差异。</p>';
+  html += '<h3 class="sub-title">方法论：亲和图（Affinity Diagram）</h3>';
   AFFINITY.method.forEach(function(m) {
     html += '<div class="insight-box"><ul><li>' + m + '</li></ul></div>';
   });
+
+  // 核心洞察主体：亲和图 8 簇
+  html += '<h3 class="sub-title">核心洞察：亲和图 8 簇</h3>';
+  html += '<p>以下 8 簇即本报告的核心洞察。与原有洞察的最大区别：亲和图从用户原话出发、不预设框架，因此能暴露原有结构中被压缩或合并的独立主题。</p>';
 
   AFFINITY.clusters.forEach(function(c) {
     html += '<div class="aff-cluster">';
@@ -123,9 +117,9 @@ function renderInsights() {
     html += '</div>';
   });
 
-  // 亲和图 vs 现有核心洞察
-  html += '<h3 class="sub-title">亲和图结论 vs 现有核心洞察：差异对比</h3>';
-  html += '<p>逐条对比现有 7 条核心洞察与亲和图 8 簇的对应关系、一致点与差异点。</p>';
+  // 为什么以亲和图为准：差异对比
+  html += '<h3 class="sub-title">为什么以亲和图为准：与原核心洞察的差异对比</h3>';
+  html += '<p>逐条对比原有 7 条核心洞察与亲和图 8 簇的对应关系、一致点与差异点，可见亲和图内容更完整、证据更强，因此以亲和图结论为准。</p>';
   html += '<div class="table-wrap"><table><thead><tr><th>现有核心洞察</th><th>亲和图对应簇</th><th>差异说明</th></tr></thead><tbody>';
   AFFINITY.comparison.forEach(function(cmp) {
     html += '<tr><td><strong>' + cmp.existing + '</strong></td><td>' + cmp.affinity + '</td><td>' + cmp.diff + '</td></tr>';
@@ -134,7 +128,7 @@ function renderInsights() {
 
   // 亲和图独有的新发现
   html += '<h3 class="sub-title">亲和图独有的新发现</h3>';
-  html += '<p>以下 4 条是亲和图分析中暴露、但现有「核心洞察」未单独呈现的发现：</p>';
+  html += '<p>以下 4 条是亲和图分析中暴露、但原有「核心洞察」未单独呈现的发现：</p>';
   AFFINITY.newFindings.forEach(function(f) {
     html += '<div class="insight-box"><ul><li>' + f + '</li></ul></div>';
   });
