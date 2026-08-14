@@ -27,45 +27,31 @@ function renderOverview() {
   html += '<div class="summary-card card-neg"><div class="label">消极态度</div><div class="value">' + neg + '</div><div class="sub">' + Math.round(neg/total*100) + '% 的受访者</div></div>';
   html += '</div>';
 
-  // 用户分群
+  // 用户分群（一行三列）
   html += '<h3 class="sub-title">用户分群</h3>';
-  html += '<p>基于访谈反馈，10位受访者可清晰分为三类人群。分群依据：对机械交互的认同度、价格预期、使用场景偏好。</p>';
+  html += '<p>基于访谈反馈，10位受访者可清晰分为三类人群。分群依据：对机械交互的认同度、价格预期、使用场景偏好。<strong>姓名色块对应其访谈态度</strong>（绿=积极 · 橙=中性 · 红=消极）。详细画像见「用户画像」页。</p>';
+  html += '<div class="seg-row">';
   SEGMENTS.forEach(function(seg) {
     html += '<div class="segment-card" style="border-top-color:' + seg.color + '">';
     html += '<div class="seg-header"><span class="seg-name">' + seg.name + '</span><span class="seg-count">' + seg.count + '人</span></div>';
     html += '<div class="seg-desc">' + seg.desc + '</div>';
-    html += '<div class="seg-key">关键词: <strong>' + seg.key + '</strong> · 价格区间: <strong>' + seg.priceRange + '</strong></div>';
+    html += '<div class="seg-key">关键词: <strong>' + seg.key + '</strong><br>价格区间: <strong>' + seg.priceRange + '</strong></div>';
     html += '<div class="seg-members">';
     seg.members.forEach(function(m) {
-      html += '<span class="seg-member">' + m + '</span>';
+      var att = 'neu';
+      PEOPLE.forEach(function(p) { if (p.name === m) att = p.attitude; });
+      html += '<span class="seg-chip att-' + att + '">' + m + '</span>';
     });
     html += '</div></div>';
   });
-
-  // 态度分布柱状图
-  html += '<h3 class="sub-title">总体态度分布</h3>';
-  html += '<div class="chart-box"><div class="chart-title">访谈后态度分布 (N=' + total + ')</div>';
-  html += '<div class="bar-row"><span class="bar-label">积极</span><div class="bar-track"><div class="bar-fill green" style="width:' + (pos/total*100) + '%">' + pos + '人 (' + Math.round(pos/total*100) + '%)</div></div></div>';
-  html += '<div class="bar-row"><span class="bar-label">中性</span><div class="bar-track"><div class="bar-fill orange" style="width:' + (neu/total*100) + '%">' + neu + '人 (' + Math.round(neu/total*100) + '%)</div></div></div>';
-  html += '<div class="bar-row"><span class="bar-label">消极</span><div class="bar-track"><div class="bar-fill red" style="width:' + (neg/total*100) + '%">' + neg + '人 (' + Math.round(neg/total*100) + '%)</div></div></div>';
-  html += '<div style="margin-top:12px;font-size:12px;color:var(--muted);font-weight:700">注：全报告统一按 10 位完整访谈统计；徐玲杰、刘旋 2 份「部分」访谈未纳入（刘旋为远程访谈、未做实物体验，徐玲杰记录不全）。</div>';
   html += '</div>';
 
-  // 核心发现摘要
-  html += '<h3 class="sub-title">核心发现</h3>';
-  html += '<div class="callout"><strong>1. 机械交互是核心差异化</strong> — 拉片动作在「体验仪式驱动型」用户中引发强烈共鸣（5人中4人积极），但在「低匹配务实型」用户中完全失效（1/1消极）。产品需精准面向前者。</div>';
-  html += '<div class="callout"><strong>2. 「可重复使用」是价格接受度的关键转折点</strong> — 2/10位受访者在得知可重复使用后价格接受度显著提升（如冯洁从200元提升至499元、朱语婷认为「非实体不会浪费」）。</div>';
-  html += '<div class="callout"><strong>3. 36张限制是双刃剑</strong> — 10/10位提及，张子璟产生焦虑、朱语婷觉得张数不够。需配合剩余张数指示和降低「浪费」心理成本。</div>';
-  html += '<div class="callout"><strong>4. App冲洗等待是最脆弱环节</strong> — 8/10位关注等待时长，担心遗忘拍摄内容。需平衡仪式感与记忆保鲜。</div>';
-  html += '<div class="callout"><strong>5. 目标用户画像清晰</strong> — 女性、18-35岁、有胶片/CCD/拍立得使用经验，对「氛围感」「仪式感」有天然追求。</div>';
-  html += '<div class="callout"><strong>6. 价格锚点</strong> — 塑料版299-399元，金属版499-599元。100元以下会损害品牌定位。</div>';
-  html += '<div class="callout"><strong>7. 产品定位</strong> — 有工具属性的趣味设备，而非纯玩具。成片质量能否超越手机是关键分水岭。</div>';
-
-  // 跨访谈主题覆盖
+  // 跨访谈主题覆盖（按提及人数降序）
   html += '<h3 class="sub-title">跨访谈主题覆盖</h3>';
   html += '<p>以下为10位受访者在访谈中主动提及的核心主题及其覆盖人数。覆盖率高的话题代表用户关注度最高。</p>';
   html += '<div class="chart-box"><div class="chart-title">主题提及率 (N=10)</div>';
-  THEME_COVERAGE.forEach(function(t) {
+  var sortedThemes = THEME_COVERAGE.slice().sort(function(a, b) { return b.count - a.count; });
+  sortedThemes.forEach(function(t) {
     var pct = Math.round(t.count / 10 * 100);
     var cls = pct >= 80 ? 'green' : (pct >= 50 ? '' : 'orange');
     html += '<div class="bar-row"><span class="bar-label">' + t.theme + '</span><div class="bar-track"><div class="bar-fill ' + cls + '" style="width:' + pct + '%">' + t.count + '/10</div></div></div>';
@@ -80,7 +66,7 @@ function renderOverview() {
 function renderInsights() {
   var html = '<div class="section" id="sec-insights">';
   html += '<div class="section-title">核心洞察</div>';
-  html += '<div class="section-desc">基于10位受访者深度访谈，提炼7条核心洞察，覆盖产品定位、定价策略、体验设计和用户画像。</div>';
+  html += '<div class="section-desc">基于10位受访者深度访谈，提炼7条核心洞察，覆盖产品定位、定价策略与体验设计。用户画像详见「用户画像」页。</div>';
 
   // 7条核心洞察
   KEY_INSIGHTS.forEach(function(ins) {
@@ -93,16 +79,18 @@ function renderInsights() {
 
   // 功能优先级矩阵
   html += '<h3 class="sub-title">功能优先级矩阵</h3>';
-  html += '<p>基于访谈中用户提及频率和态度，将功能按 P0（必须）→ P3（可选）排列。necessity 为提及该功能的用户比例。</p>';
+  html += '<p>基于访谈中用户提及频率和态度，将功能按 P0（必须）→ P3（可选）排列。necessity 为提及该功能的用户比例。状态列：<span class="st-ok">✓ 已定义</span> 产品已定义该功能 · <span class="st-track">🔍 追踪</span> 需持续追踪验证 · <span class="st-no">✗ 无法满足</span> 该功能不做。</p>';
   html += '<div class="table-wrap"><table>';
   html += '<thead><tr><th>功能</th><th>优先级</th><th>提及率</th><th>状态</th><th>说明</th></tr></thead><tbody>';
   FUNCTION_PRIORITY.forEach(function(f) {
-    html += '<tr><td><strong>' + f.name + '</strong></td><td><span class="priority-badge priority-' + f.priority + '">' + f.priority + '</span></td><td>' + f.necessity + '</td><td>' + f.status + '</td><td>' + f.desc + '</td></tr>';
+    var stCls = f.status === '已定义' ? 'st-ok' : (f.status === '追踪' ? 'st-track' : 'st-no');
+    var stIcon = f.status === '已定义' ? '✓' : (f.status === '追踪' ? '🔍' : '✗');
+    html += '<tr><td><strong>' + f.name + '</strong></td><td><span class="priority-badge priority-' + f.priority + '">' + f.priority + '</span></td><td>' + f.necessity + '</td><td><span class="' + stCls + '">' + stIcon + ' ' + f.status + '</span></td><td>' + f.desc + '</td></tr>';
   });
   html += '</tbody></table></div>';
 
-  // 体验架构建议
-  html += '<h3 class="sub-title">体验架构建议</h3>';
+  // 体验架构（当前产品体验架构）
+  html += '<h3 class="sub-title">体验架构</h3>';
   html += '<div class="arch-box">';
   html += '<div class="arch-core">' + EXPERIENCE_ARCH.core + '</div>';
   html += '<div class="arch-modes">';
@@ -116,13 +104,11 @@ function renderInsights() {
   });
   html += '</div></div>';
 
-  // 定价建议
-  html += '<h3 class="sub-title">定价建议</h3>';
-  html += '<div class="two-col">';
-  html += '<div class="callout"><strong>塑料版: 299–399元</strong><br>覆盖「便利价值权衡型」用户。此价位被视为「冲动消费可接受区间」，王雅岚（300冲动消费）和孙雨琪（100-200）代表此区间下限。</div>';
-  html += '<div class="callout"><strong>金属版: 499–599元</strong><br>覆盖「体验仪式驱动型」用户。张震（499）、冯洁（499）、刘莹（599）均在此区间。金属材质可提升接受度。</div>';
-  html += '</div>';
-  html += '<div class="callout danger"><strong>定价红线</strong> — 100元以下会被视为「小孩玩具」（韩志群），反而损害品牌定位。1000元以上超出所有受访者接受范围。</div>';
+  // 定价 499 元
+  html += '<h3 class="sub-title">定价：499 元</h3>';
+  html += '<div class="callout"><strong>499 元是既定决策，不做塑料版 / 金属版分档</strong><br>金属版因成本与信号问题不成立。499 元落在积极用户「认真考虑」区间——张震（499）、冯洁（可重复使用后 499 可接受）、刘莹（599 认真考虑），不是需要被验证的价格，而是需要用体验去兑现的价格。</div>';
+  html += '<div class="callout"><strong>撑住 499 元的关键：外观设计与 CMF 投入</strong><br>塑料材质容易带来廉价感，会直接削弱机械手感带来的价值感知。外观设计、表面处理、按键手感、机身配重等 CMF 细节需要足够投入，让「摸到它就想拍」的物理质感与滤镜直出、冲扫等待的仪式感形成一致的价值感。</div>';
+  html += '<div class="callout danger"><strong>定价红线</strong> — 100元以下会被视为「小孩玩具」（韩志群），反而损害品牌定位。1000元以上超出所有受访者接受范围。只要设计做好、滤镜做好、整体体验把握住，这款产品完全能够站住 499 元。</div>';
 
   html += '</div>';
   return html;
@@ -273,10 +259,102 @@ function renderAttitude() {
   return html;
 }
 
+// --- 用户画像 ---
+function renderPersona() {
+  var p = PERSONA;
+  var html = '<div class="section" id="sec-persona">';
+  html += '<div class="section-title">用户画像</div>';
+  html += '<div class="section-desc">访谈人群 × 问卷 G 分组交叉画像 · 10 位完整访谈 + 89 份问卷</div>';
+
+  // 画像交叉说明
+  html += '<div class="callout">' + p.intro + '</div>';
+
+  // 三类人群详细画像
+  html += '<h3 class="sub-title">三类人群画像（访谈侧）</h3>';
+  html += '<p>下面对每类人群展开：人口学构成、设备经验、态度分布、价格预期、购买动机、关键顾虑与沟通策略。</p>';
+
+  p.personas.forEach(function(seg) {
+    var color = '';
+    if (seg.id === 'ritual') color = 'var(--accent)';
+    else if (seg.id === 'value') color = 'var(--warn)';
+    else color = 'var(--danger)';
+
+    html += '<div class="segment-card" style="border-top-color:' + color + '">';
+    html += '<div class="seg-header"><span class="seg-name">' + seg.name + '</span><span class="seg-count">' + seg.count + '人</span></div>';
+
+    // 成员（态度色块）
+    html += '<div class="seg-members">';
+    seg.members.forEach(function(m) {
+      var att = 'neu';
+      PEOPLE.forEach(function(x) { if (x.name === m) att = x.attitude; });
+      html += '<span class="seg-chip att-' + att + '">' + m + '</span>';
+    });
+    html += '</div>';
+
+    // 画像明细表
+    html += '<div class="persona-grid">';
+    var rows = [
+      ['态度分布', seg.attitude],
+      ['人口学', seg.demographic],
+      ['设备经验', seg.device],
+      ['价格预期', seg.price],
+      ['问卷 G 分组', seg.gGroup],
+      ['购买动机', seg.motivation],
+      ['关键顾虑', seg.concern],
+      ['决策因素', seg.decision],
+      ['沟通策略', seg.message]
+    ];
+    rows.forEach(function(r) {
+      html += '<div class="persona-row"><div class="persona-k">' + r[0] + '</div><div class="persona-v">' + r[1] + '</div></div>';
+    });
+    html += '</div>';
+
+    // 代表语录
+    html += '<div class="quote-block">' + seg.quote + '</div>';
+    html += '</div>';
+  });
+
+  // G 分组（问卷侧）
+  html += '<h3 class="sub-title">问卷 G 分组（问卷侧）</h3>';
+  html += '<p>89 份倾向性问卷按设备经验与审美取向分为三组，10 位受访者均来自其中。G 分组回答的是「目标用户长什么样」，与访谈侧的三类人群互为印证。</p>';
+  html += '<div class="seg-row">';
+  p.gGroups.forEach(function(g) {
+    html += '<div class="segment-card">';
+    html += '<div class="seg-header"><span class="seg-name">' + g.id + ' · ' + g.name + '</span><span class="seg-count">' + g.count + '人</span></div>';
+    html += '<div class="seg-desc">' + g.desc + '</div>';
+    html += '<div class="seg-members">';
+    g.members.forEach(function(m) {
+      var att = 'neu';
+      PEOPLE.forEach(function(x) { if (x.name === m) att = x.attitude; });
+      html += '<span class="seg-chip att-' + att + '">' + m + '</span>';
+    });
+    html += '</div>';
+    html += '<div class="seg-key">特质</div><div class="seg-desc">';
+    g.traits.forEach(function(t) { html += '<div class="g-trait">· ' + t + '</div>'; });
+    html += '</div></div>';
+  });
+  html += '</div>';
+
+  // 问卷 × 访谈 映射
+  html += '<h3 class="sub-title">问卷 × 访谈 交叉映射</h3>';
+  html += '<div class="table-wrap"><table><thead><tr><th>问卷 G 分组</th><th>对应访谈人群</th><th>转化要点</th></tr></thead><tbody>';
+  p.mapping.forEach(function(m) {
+    html += '<tr><td><strong>' + m.q + '</strong></td><td>' + m.i + '</td><td>' + m.note + '</td></tr>';
+  });
+  html += '</tbody></table></div>';
+
+  // 画像结论
+  html += '<h3 class="sub-title">画像结论</h3>';
+  html += '<div class="callout">' + p.conclusion + '</div>';
+
+  html += '</div>';
+  return html;
+}
+
 // --- 初始化 ---
 function init() {
   var main = document.getElementById('main-inner');
-  main.innerHTML = renderOverview() + renderInsights() + renderAttitude() + renderAnalysis();
+  main.innerHTML = renderOverview() + renderPersona() + renderInsights() + renderAttitude() + renderAnalysis();
 }
 
 init();

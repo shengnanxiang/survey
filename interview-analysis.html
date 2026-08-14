@@ -148,15 +148,35 @@ h3.sub-title::after{content:'';display:block;width:60px;height:6px;background:va
 .highlight{color:var(--accent-dark);font-weight:900}
 
 /* ---------- 用户分群卡片 ---------- */
-.segment-card{background:#fff;border:3px solid var(--ink);padding:22px 26px;margin-bottom:16px;box-shadow:6px 6px 0 rgba(0,0,0,.12);border-top:8px solid var(--accent)}
+.seg-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:20px}
+@media(max-width:900px){.seg-row{grid-template-columns:1fr}}
+.segment-card{background:#fff;border:3px solid var(--ink);padding:22px 26px;margin-bottom:16px;box-shadow:6px 6px 0 rgba(0,0,0,.12);border-top:8px solid var(--accent);min-width:0}
+.seg-row .segment-card{margin-bottom:0}
 .segment-card .seg-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
-.segment-card .seg-name{font-size:22px;font-weight:900;font-family:var(--font-display);text-transform:uppercase;letter-spacing:.02em;color:var(--ink)}
+.segment-card .seg-name{font-size:20px;font-weight:900;font-family:var(--font-display);text-transform:uppercase;letter-spacing:.02em;color:var(--ink)}
 .segment-card .seg-count{font-size:12px;padding:3px 12px;border:2px solid var(--ink);background:var(--accent);color:#fff;font-weight:900}
-.segment-card .seg-desc{font-size:15px;color:var(--ink-2);margin-bottom:10px;line-height:1.65;font-weight:700}
+.segment-card .seg-desc{font-size:14px;color:var(--ink-2);margin-bottom:10px;line-height:1.65;font-weight:700}
 .segment-card .seg-members{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-.segment-card .seg-member{font-size:12px;padding:3px 10px;border:2px solid var(--ink);background:var(--paper);color:var(--ink-2);font-weight:800}
+.segment-card .seg-chip{font-size:12px;padding:4px 10px;background:var(--gray);color:#fff;font-weight:800}
+.segment-card .seg-chip.att-pos{background:var(--success)}
+.segment-card .seg-chip.att-neu{background:var(--warn)}
+.segment-card .seg-chip.att-neg{background:var(--danger)}
 .segment-card .seg-key{font-size:13px;color:var(--gray);margin-top:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
 .segment-card .seg-key strong{color:var(--accent);font-weight:900}
+
+/* ---------- 用户画像 ---------- */
+.persona-grid{display:grid;grid-template-columns:1fr;margin:14px 0 6px}
+.persona-row{display:grid;grid-template-columns:110px 1fr;gap:14px;padding:7px 0;border-bottom:2px dashed var(--paper-dark);align-items:baseline}
+.persona-row:last-child{border-bottom:0}
+.persona-k{font-size:12px;color:var(--gray);font-weight:900;text-transform:uppercase;letter-spacing:.05em}
+.persona-v{font-size:14px;color:var(--ink-2);font-weight:700;line-height:1.6}
+.quote-block{font-size:14px;color:var(--ink);font-weight:800;font-style:italic;border-left:4px solid var(--accent);padding:8px 0 2px 14px;margin-top:12px}
+.g-trait{font-size:13px;color:var(--ink-2);font-weight:700;line-height:1.7}
+
+/* ---------- 功能状态列 ---------- */
+.st-ok{color:var(--success);font-weight:900;white-space:nowrap}
+.st-track{color:var(--warn);font-weight:900;white-space:nowrap}
+.st-no{color:var(--danger);font-weight:900;white-space:nowrap}
 
 /* ---------- 优先级徽章 ---------- */
 .priority-badge{font-size:11px;padding:3px 10px;border:2px solid var(--ink);font-weight:900;letter-spacing:.06em}
@@ -199,6 +219,7 @@ h3.sub-title::after{content:'';display:block;width:60px;height:6px;background:va
 </div>
 <div class="nav-tabs">
 <button class="nav-tab active" onclick="showSection('overview',this)">概览</button>
+<button class="nav-tab" onclick="showSection('persona',this)">用户画像</button>
 <button class="nav-tab" onclick="showSection('insights',this)">核心洞察</button>
 <button class="nav-tab" onclick="showSection('attitude',this)">态度变化</button>
 <button class="nav-tab" onclick="showSection('analysis',this)">访谈详析</button>
