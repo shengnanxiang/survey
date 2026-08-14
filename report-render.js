@@ -29,7 +29,7 @@ function renderOverview() {
 
   // 用户分群
   html += '<h3 class="sub-title">用户分群</h3>';
-  html += '<p>基于访谈反馈，12位受访者可清晰分为三类人群。分群依据：对机械交互的认同度、价格预期、使用场景偏好。</p>';
+  html += '<p>基于访谈反馈，10位受访者可清晰分为三类人群。分群依据：对机械交互的认同度、价格预期、使用场景偏好。</p>';
   SEGMENTS.forEach(function(seg) {
     html += '<div class="segment-card" style="border-top-color:' + seg.color + '">';
     html += '<div class="seg-header"><span class="seg-name">' + seg.name + '</span><span class="seg-count">' + seg.count + '人</span></div>';
@@ -48,26 +48,27 @@ function renderOverview() {
   html += '<div class="bar-row"><span class="bar-label">积极</span><div class="bar-track"><div class="bar-fill green" style="width:' + (pos/total*100) + '%">' + pos + '人 (' + Math.round(pos/total*100) + '%)</div></div></div>';
   html += '<div class="bar-row"><span class="bar-label">中性</span><div class="bar-track"><div class="bar-fill orange" style="width:' + (neu/total*100) + '%">' + neu + '人 (' + Math.round(neu/total*100) + '%)</div></div></div>';
   html += '<div class="bar-row"><span class="bar-label">消极</span><div class="bar-track"><div class="bar-fill red" style="width:' + (neg/total*100) + '%">' + neg + '人 (' + Math.round(neg/total*100) + '%)</div></div></div>';
+  html += '<div style="margin-top:12px;font-size:12px;color:var(--muted);font-weight:700">注：全报告统一按 10 位完整访谈统计；徐玲杰、刘旋 2 份「部分」访谈未纳入（刘旋为远程访谈、未做实物体验，徐玲杰记录不全）。</div>';
   html += '</div>';
 
   // 核心发现摘要
   html += '<h3 class="sub-title">核心发现</h3>';
-  html += '<div class="callout"><strong>1. 机械交互是核心差异化</strong> — 拉片动作在「体验仪式驱动型」用户中引发强烈共鸣（6/6积极），但在「低匹配务实型」用户中完全失效（2/2消极）。产品需精准面向前者。</div>';
-  html += '<div class="callout"><strong>2. 「可重复使用」是价格接受度的关键转折点</strong> — 5/12位受访者在得知可重复使用后价格接受度显著提升（如冯洁从200元提升至499元）。</div>';
-  html += '<div class="callout"><strong>3. 36张限制是双刃剑</strong> — 8/12位提及，5位产生焦虑。需配合剩余张数指示和降低「浪费」心理成本。</div>';
-  html += '<div class="callout"><strong>4. App冲洗等待是最脆弱环节</strong> — 7/12位关注等待时长，担心遗忘拍摄内容。需平衡仪式感与记忆保鲜。</div>';
+  html += '<div class="callout"><strong>1. 机械交互是核心差异化</strong> — 拉片动作在「体验仪式驱动型」用户中引发强烈共鸣（5人中4人积极），但在「低匹配务实型」用户中完全失效（1/1消极）。产品需精准面向前者。</div>';
+  html += '<div class="callout"><strong>2. 「可重复使用」是价格接受度的关键转折点</strong> — 2/10位受访者在得知可重复使用后价格接受度显著提升（如冯洁从200元提升至499元、朱语婷认为「非实体不会浪费」）。</div>';
+  html += '<div class="callout"><strong>3. 36张限制是双刃剑</strong> — 10/10位提及，张子璟产生焦虑、朱语婷觉得张数不够。需配合剩余张数指示和降低「浪费」心理成本。</div>';
+  html += '<div class="callout"><strong>4. App冲洗等待是最脆弱环节</strong> — 8/10位关注等待时长，担心遗忘拍摄内容。需平衡仪式感与记忆保鲜。</div>';
   html += '<div class="callout"><strong>5. 目标用户画像清晰</strong> — 女性、18-35岁、有胶片/CCD/拍立得使用经验，对「氛围感」「仪式感」有天然追求。</div>';
   html += '<div class="callout"><strong>6. 价格锚点</strong> — 塑料版299-399元，金属版499-599元。100元以下会损害品牌定位。</div>';
   html += '<div class="callout"><strong>7. 产品定位</strong> — 有工具属性的趣味设备，而非纯玩具。成片质量能否超越手机是关键分水岭。</div>';
 
   // 跨访谈主题覆盖
   html += '<h3 class="sub-title">跨访谈主题覆盖</h3>';
-  html += '<p>以下为12位受访者在访谈中主动提及的核心主题及其覆盖人数。覆盖率高的话题代表用户关注度最高。</p>';
-  html += '<div class="chart-box"><div class="chart-title">主题提及率 (N=12)</div>';
+  html += '<p>以下为10位受访者在访谈中主动提及的核心主题及其覆盖人数。覆盖率高的话题代表用户关注度最高。</p>';
+  html += '<div class="chart-box"><div class="chart-title">主题提及率 (N=10)</div>';
   THEME_COVERAGE.forEach(function(t) {
-    var pct = Math.round(t.count / 12 * 100);
+    var pct = Math.round(t.count / 10 * 100);
     var cls = pct >= 80 ? 'green' : (pct >= 50 ? '' : 'orange');
-    html += '<div class="bar-row"><span class="bar-label">' + t.theme + '</span><div class="bar-track"><div class="bar-fill ' + cls + '" style="width:' + pct + '%">' + t.count + '/12</div></div></div>';
+    html += '<div class="bar-row"><span class="bar-label">' + t.theme + '</span><div class="bar-track"><div class="bar-fill ' + cls + '" style="width:' + pct + '%">' + t.count + '/10</div></div></div>';
   });
   html += '</div>';
 
@@ -79,7 +80,7 @@ function renderOverview() {
 function renderInsights() {
   var html = '<div class="section" id="sec-insights">';
   html += '<div class="section-title">核心洞察</div>';
-  html += '<div class="section-desc">基于12位受访者深度访谈，提炼7条核心洞察，覆盖产品定位、定价策略、体验设计和用户画像。</div>';
+  html += '<div class="section-desc">基于10位受访者深度访谈，提炼7条核心洞察，覆盖产品定位、定价策略、体验设计和用户画像。</div>';
 
   // 7条核心洞察
   KEY_INSIGHTS.forEach(function(ins) {
@@ -131,7 +132,7 @@ function renderInsights() {
 function renderAnalysis() {
   var html = '<div class="section" id="sec-analysis">';
   html += '<div class="section-title">访谈详析</div>';
-  html += '<div class="section-desc">12位受访者完整访谈记录摘要，作为补充参考材料。</div>';
+  html += '<div class="section-desc">10位受访者完整访谈记录摘要（徐玲杰、刘旋 2 份「部分」访谈未纳入），作为补充参考材料。</div>';
 
   PEOPLE.forEach(function(p) {
     var attInfo = ATTITUDE_MAP[p.attitude];
@@ -207,7 +208,7 @@ function renderAttitude() {
   html += '<div class="callout warn"><strong>严格等级转换对照</strong> — 若只把 T0 的「想试试 / 好奇 / 麻烦 / 不感兴趣」与 T1 的「积极 / 中性 / 消极」对应，则为 ' + c.strict.up + ' 人上升、' + c.strict.stable + ' 人不变、' + c.strict.down + ' 人下降。综合访谈强度后：冯洁属于积极加深，张子璟虽仍为中性但确定性下降，因此得到 ' + c.summary.up + ' / ' + c.summary.stable + ' / ' + c.summary.down + '。</div>';
 
   // T0 与 T1 结构变化
-  html += '<h3 class="sub-title">T0 与 T1 的结构变化</h3>';
+  html += '<h3 class="sub-title">T0 与 T1 的结构变化 (N=10，10 位完整访谈)</h3>';
   html += '<div class="table-wrap"><table><thead><tr><th>阶段</th><th>积极</th><th>中性 / 好奇</th><th>负面 / 麻烦</th></tr></thead><tbody>';
   c.structure.forEach(function(s) {
     html += '<tr><td><strong>' + s.stage + '</strong></td><td class="att-up">' + s.pos + ' 人</td><td class="att-same">' + s.neu + ' 人</td><td class="att-down">' + s.neg + ' 人</td></tr>';
