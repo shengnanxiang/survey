@@ -57,7 +57,7 @@ body{display:flex;flex-direction:column;min-height:100vh}
 .table-wrap{overflow-x:auto;margin-bottom:20px}
 table{width:100%;border-collapse:collapse;font-size:13px}
 th{background:var(--panel2);padding:12px 14px;text-align:left;font-weight:600;border-bottom:2px solid var(--border);white-space:nowrap}
-td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--soft)}
+td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--soft);vertical-align:top}
 tr:hover td{background:rgba(255,255,255,.02)}
 .att-up{color:var(--success);font-weight:600}.att-down{color:var(--danger);font-weight:600}.att-same{color:var(--muted)}
 .chart-box{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin-bottom:20px}
@@ -80,6 +80,58 @@ tr:hover td{background:rgba(255,255,255,.02)}
 p{font-size:14px;color:var(--soft);margin-bottom:12px;line-height:1.8}
 h3.sub-title{font-size:16px;font-weight:600;margin:20px 0 12px;color:var(--text)}
 .highlight{color:var(--accent);font-weight:600}
+/* 新增样式 */
+.segment-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin-bottom:16px;border-top:3px solid var(--accent)}
+.segment-card .seg-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.segment-card .seg-name{font-size:16px;font-weight:700}
+.segment-card .seg-count{font-size:12px;padding:3px 10px;border-radius:4px;background:rgba(124,155,255,.15);color:var(--accent);font-weight:600}
+.segment-card .seg-desc{font-size:13px;color:var(--soft);margin-bottom:10px;line-height:1.7}
+.segment-card .seg-members{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.segment-card .seg-member{font-size:11px;padding:2px 8px;border-radius:4px;background:rgba(255,255,255,.05);color:var(--soft);border:1px solid var(--border)}
+.segment-card .seg-key{font-size:12px;color:var(--muted);margin-top:8px}
+.segment-card .seg-key strong{color:var(--accent)}
+.priority-badge{font-size:10px;padding:2px 8px;border-radius:4px;font-weight:700;letter-spacing:.05em}
+.priority-P0{background:rgba(224,85,138,.15);color:var(--danger);border:1px solid rgba(224,85,138,.3)}
+.priority-P1{background:rgba(247,185,85,.15);color:var(--warn);border:1px solid rgba(247,185,85,.3)}
+.priority-P2{background:rgba(124,155,255,.15);color:var(--accent);border:1px solid rgba(124,255,255,.3)}
+.priority-P3{background:rgba(255,255,255,.05);color:var(--muted);border:1px solid var(--border)}
+.change-up{color:var(--success);font-weight:600}
+.change-down{color:var(--danger);font-weight:600}
+.change-same{color:var(--muted);font-weight:600}
+.consistency-badge{font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600}
+.consistency-yes{background:rgba(62,207,142,.15);color:var(--success)}
+.consistency-no{background:rgba(224,85,138,.15);color:var(--danger)}
+.consistency-partial{background:rgba(247,185,85,.15);color:var(--warn)}
+.arch-box{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:20px}
+.arch-core{text-align:center;font-size:15px;font-weight:600;color:var(--accent);padding:12px 20px;background:rgba(124,155,255,.08);border-radius:8px;margin-bottom:16px}
+.arch-modes{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+@media(max-width:700px){.arch-modes{grid-template-columns:1fr}}
+.arch-mode{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:16px}
+.arch-mode .mode-name{font-size:14px;font-weight:600;margin-bottom:6px;color:var(--accent)}
+.arch-mode .mode-desc{font-size:12px;color:var(--soft);margin-bottom:4px}
+.arch-mode .mode-focus{font-size:11px;color:var(--muted)}
+.arch-layers{display:flex;gap:12px;flex-wrap:wrap}
+.arch-layer{flex:1;min-width:180px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center}
+.arch-layer .layer-name{font-size:13px;font-weight:600;margin-bottom:4px}
+.arch-layer .layer-desc{font-size:11px;color:var(--soft);margin-bottom:6px}
+.insight-card{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:var(--radius);padding:20px 24px;margin-bottom:16px}
+.insight-card .ic-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.insight-card .ic-num{font-size:12px;width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0}
+.insight-card .ic-title{font-size:15px;font-weight:600}
+.insight-card .ic-desc{font-size:13px;color:var(--soft);line-height:1.8;margin-bottom:10px}
+.insight-card .ic-evidence{font-size:12px;color:var(--muted);font-style:italic;padding:8px 12px;background:rgba(255,255,255,.03);border-radius:6px}
+.insight-card .ic-tag{font-size:10px;padding:2px 8px;border-radius:4px;background:rgba(124,155,255,.15);color:var(--accent);font-weight:600}
+.merge-person{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:0;margin-bottom:16px;overflow:hidden}
+.merge-person .mp-header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:var(--panel2);border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px}
+.merge-person .mp-name{font-size:16px;font-weight:700;display:flex;align-items:center;gap:10px}
+.merge-person .mp-body{padding:16px 20px}
+.merge-person .mp-row{display:grid;grid-template-columns:120px 1fr 1fr 1fr;gap:12px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04);align-items:start}
+@media(max-width:900px){.merge-person .mp-row{grid-template-columns:1fr;gap:4px}}
+.merge-person .mp-row-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;padding-top:2px}
+.merge-person .mp-survey{font-size:12px;color:var(--soft)}
+.merge-person .mp-interview{font-size:12px;color:var(--soft)}
+.merge-person .mp-analysis{font-size:12px;color:var(--soft)}
+.merge-person .mp-col-header{font-size:11px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.05em;padding-bottom:4px}
 </style>
 </head>
 <body>
@@ -89,10 +141,9 @@ h3.sub-title{font-size:16px;font-weight:600;margin:20px 0 12px;color:var(--text)
 </div>
 <div class="nav-tabs">
 <button class="nav-tab active" onclick="showSection('overview',this)">概览</button>
+<button class="nav-tab" onclick="showSection('insights',this)">核心洞察</button>
+<button class="nav-tab" onclick="showSection('merge',this)">调研×访谈合并</button>
 <button class="nav-tab" onclick="showSection('analysis',this)">访谈详析</button>
-<button class="nav-tab" onclick="showSection('merge',this)">调研x访谈合并</button>
-<button class="nav-tab" onclick="showSection('attitude',this)">态度变化分析</button>
-<button class="nav-tab" onclick="showSection('insights',this)">核心洞察与建议</button>
 </div>
 <div class="main" id="main"></div>
 <div class="footer">AiKen 用户调研 · 访谈分析报告 · 2026年8月</div>
