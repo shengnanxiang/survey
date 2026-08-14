@@ -6,96 +6,125 @@
 <title>AiKen 新品调研 · 洞察报告</title>
 <style>
 :root {
-    --bg: #0a0e1a; --card: #111827; --border: #1e293b;
-    --text: #f1f5f9; --text-soft: #94a3b8; --text-muted: #64748b;
-    --accent: #f59e0b; --accent2: #f97316; --blue: #3b82f6;
-    --green: #10b981; --purple: #8b5cf6; --pink: #ec4899;
-    --radius: 16px;
+    --bg: #f0efe6; --card: #ffffff; --border: #0f0f0f;
+    --text: #0f0f0f; --text-soft: #2a2a2a; --text-muted: #6b6b6b;
+    --accent: #0e6fd6; --accent2: #0a53a8; --blue: #0e6fd6;
+    --green: #1a7a3e; --purple: #7a4dc0; --pink: #b22222;
+    --radius: 0;
+    --font-display: Impact, "Arial Black", "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
     --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+    --font-mono: "Courier New", Consolas, Menlo, monospace;
 }
 * { margin:0; padding:0; box-sizing:border-box; }
-body { background: var(--bg); color: var(--text); font-family: var(--font); line-height: 1.7; -webkit-font-smoothing: antialiased; }
+body { background: var(--bg); color: var(--text); font-family: var(--font); line-height: 1.7; -webkit-font-smoothing: antialiased; background-image: radial-gradient(rgba(15,15,15,0.06) 1px, transparent 1px); background-size: 22px 22px; }
+
+/* Toolbar */
+.toolbar { background:#0f0f0f; color:#f6f5ec; position: sticky; top:0; z-index:10; border-bottom: 6px solid var(--accent); }
+.toolbar-inner { max-width: 1100px; margin: 0 auto; width:100%; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; gap:16px; }
+.toolbar h1 { font-size: 30px; font-weight: 900; font-family: var(--font-display); text-transform: uppercase; letter-spacing: .03em; line-height: 1; }
+.toolbar h1 span { color:#f6f5ec; }
+.toolbar-right { display:flex; align-items:center; gap:16px; }
+.toolbar-right .meta { font-size: 11px; color:#cfcdbd; font-weight:800; letter-spacing:.05em; text-transform:uppercase; font-family:var(--font-mono); }
+.btn-back { padding:5px 12px; font-size:11px; border-radius:0; background:transparent; border:1.5px solid #f6f5ec; color:#f6f5ec; cursor:pointer; text-decoration:none; font-family:var(--font); font-weight:800; letter-spacing:.06em; text-transform:uppercase; transition:all .15s; }
+.btn-back:hover { color:#fff; border-color:var(--accent); background:var(--accent); }
 
 /* Hero */
 .hero {
-    text-align: center; padding: 80px 28px 60px;
-    background: radial-gradient(ellipse 80% 60% at 50% 20%, rgba(245,158,11,0.08), transparent);
-    border-bottom: 1px solid var(--border);
+    text-align: center; padding: 64px 28px 56px;
+    background: var(--bg);
+    border-bottom: 3px solid var(--border);
 }
-.hero .tag { display:inline-block; padding:4px 14px; border-radius:20px; background:rgba(245,158,11,0.15); color:var(--accent); font-size:12px; font-weight:600; letter-spacing:0.06em; margin-bottom:20px; }
-.hero h1 { font-size: clamp(32px, 5vw, 52px); font-weight: 800; letter-spacing: -0.02em; margin-bottom: 16px; }
-.hero h1 span { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.hero .subtitle { font-size: 17px; color: var(--text-soft); max-width: 600px; margin: 0 auto 24px; }
-.hero .meta { font-size: 13px; color: var(--text-muted); }
+.hero .tag { display:inline-block; padding:4px 14px; border-radius:0; background:var(--text); color:#f6f5ec; font-size:11px; font-weight:900; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:20px; font-family:var(--font-mono); }
+.hero h1 { font-size: clamp(36px, 6vw, 64px); font-weight: 900; letter-spacing: .01em; margin-bottom: 16px; font-family: var(--font-display); text-transform: uppercase; line-height: 1.05; }
+.hero h1 span { color: var(--accent); -webkit-text-fill-color: var(--accent); background: none; }
+.hero .subtitle { font-size: 16px; color: var(--text-soft); max-width: 600px; margin: 0 auto 24px; font-weight: 700; }
+.hero .meta { font-size: 12px; color: var(--text-muted); font-weight:800; letter-spacing:.04em; text-transform:uppercase; font-family:var(--font-mono); }
+.hero .btn-hero { display:inline-block; color:var(--accent); text-decoration:none; font-size:13px; border:2px solid var(--accent); padding:7px 18px; border-radius:0; font-weight:900; letter-spacing:.06em; text-transform:uppercase; transition:all .2s; background:transparent; }
+.hero .btn-hero:hover { background:var(--accent); color:#fff; }
 
 /* Container */
 .container { max-width: 900px; margin: 0 auto; padding: 0 28px; }
 
 /* Section */
-.section { padding: 56px 0; }
-.section + .section { border-top: 1px solid var(--border); }
-.section-header { margin-bottom: 32px; }
-.section-number { font-size: 12px; font-weight: 700; color: var(--accent); letter-spacing: 0.08em; margin-bottom: 8px; }
-.section-title { font-size: 26px; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 8px; }
-.section-desc { font-size: 15px; color: var(--text-soft); }
+.section { padding: 48px 0; }
+.section + .section { border-top: 3px solid var(--border); }
+.section-header { margin-bottom: 28px; }
+.section-number { font-size: 12px; font-weight: 900; color: var(--accent); letter-spacing: 0.08em; margin-bottom: 8px; text-transform: uppercase; font-family: var(--font-mono); }
+.section-title { font-size: 30px; font-weight: 900; letter-spacing: .01em; margin-bottom: 8px; font-family: var(--font-display); text-transform: uppercase; line-height: 1.15; }
+.section-desc { font-size: 14px; color: var(--text-soft); font-weight: 700; }
 
 /* Big stat */
-.big-stat { text-align: center; padding: 32px 0; }
-.big-stat .number { font-size: clamp(48px, 8vw, 72px); font-weight: 800; letter-spacing: -0.03em; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1; }
-.big-stat .label { font-size: 15px; color: var(--text-soft); margin-top: 8px; }
+.big-stat { text-align: center; padding: 24px 0; }
+.big-stat .number { font-size: clamp(56px, 9vw, 80px); font-weight: 900; letter-spacing: 0; color: var(--accent); line-height: 1; font-family: var(--font-display); }
+.big-stat .label { font-size: 14px; color: var(--text-soft); margin-top: 8px; font-weight: 700; }
 
 /* Stat grid */
 .stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin: 28px 0; }
 @media (max-width: 500px) { .stat-grid { grid-template-columns: 1fr; } }
-.stat-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; text-align: center; }
-.stat-card .num { font-size: 36px; font-weight: 800; line-height: 1; }
+.stat-card { background: var(--card); border: 3px solid var(--border); border-radius: var(--radius); box-shadow: 5px 5px 0 rgba(0,0,0,.12); padding: 22px; text-align: center; }
+.stat-card .num { font-size: 38px; font-weight: 900; line-height: 1; font-family: var(--font-display); }
 .stat-card .num.accent { color: var(--accent); }
 .stat-card .num.green { color: var(--green); }
 .stat-card .num.blue { color: var(--blue); }
 .stat-card .num.purple { color: var(--purple); }
-.stat-card .lbl { font-size: 13px; color: var(--text-muted); margin-top: 8px; }
+.stat-card .lbl { font-size: 12px; color: var(--text-muted); margin-top: 8px; font-weight: 700; line-height: 1.6; }
 
 /* Insight block */
-.insight-block { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 32px; margin-bottom: 20px; }
-.insight-block .ib-label { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; color: var(--accent); margin-bottom: 8px; text-transform: uppercase; }
-.insight-block h3 { font-size: 20px; font-weight: 700; margin-bottom: 12px; }
-.insight-block p { font-size: 14px; color: var(--text-soft); line-height: 1.8; }
-.insight-block .highlight { color: var(--accent); font-weight: 600; }
+.insight-block { background: var(--card); border: 3px solid var(--border); border-radius: var(--radius); box-shadow: 6px 6px 0 rgba(0,0,0,.12); padding: 26px 30px; margin-bottom: 20px; }
+.insight-block .ib-label { font-size: 11px; font-weight: 900; letter-spacing: 0.08em; color: var(--accent); margin-bottom: 8px; text-transform: uppercase; font-family: var(--font-mono); }
+.insight-block h3 { font-size: 20px; font-weight: 900; margin-bottom: 12px; font-family: var(--font-display); text-transform: uppercase; letter-spacing: .02em; }
+.insight-block p { font-size: 14px; color: var(--text-soft); line-height: 1.8; font-weight: 600; }
+.insight-block .highlight { color: var(--accent); font-weight: 900; }
 
 /* Bar mini */
-.bar-mini { display: flex; align-items: center; gap: 12px; margin: 8px 0; }
-.bar-mini .bm-label { width: 140px; text-align: right; font-size: 13px; color: var(--text-soft); flex-shrink: 0; white-space: nowrap; }
-.bar-mini .bm-track { flex: 1; height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; }
-.bar-mini .bm-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
-.bar-mini .bm-val { font-size: 12px; color: var(--text-muted); width: 48px; flex-shrink: 0; }
+.bar-mini { display: flex; align-items: center; gap: 12px; margin: 10px 0; }
+.bar-mini .bm-label { width: 140px; text-align: right; font-size: 13px; color: var(--text-soft); flex-shrink: 0; white-space: nowrap; font-weight: 800; }
+.bar-mini .bm-track { flex: 1; height: 24px; background: #e6e4d6; border: 2px solid var(--border); border-radius: 0; overflow: hidden; }
+.bar-mini .bm-fill { height: 100%; border-radius: 0; background: var(--accent); }
+.bar-mini .bm-val { font-size: 12px; color: var(--text-muted); width: 52px; flex-shrink: 0; font-weight: 800; }
 
 /* Quote */
-.quote-block { border-left: 3px solid var(--accent); padding: 16px 24px; margin: 24px 0; background: rgba(245,158,11,0.04); border-radius: 0 var(--radius) var(--radius) 0; }
-.quote-block p { font-size: 16px; font-style: italic; color: var(--text-soft); }
+.quote-block { border-left: 6px solid var(--accent); border-top: 2px solid var(--border); border-right: 2px solid var(--border); border-bottom: 2px solid var(--border); padding: 16px 24px; margin: 24px 0; background: var(--card); border-radius: 0; }
+.quote-block p { font-size: 15px; font-style: italic; color: var(--text-soft); font-weight: 700; }
 
 /* Cross insight grid */
 .cross-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 @media (max-width: 600px) { .cross-grid { grid-template-columns: 1fr; } }
-.cross-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; }
-.cross-card .cc-num { font-size: 28px; font-weight: 800; margin-bottom: 4px; }
+.cross-card { background: var(--card); border: 3px solid var(--border); border-radius: var(--radius); box-shadow: 4px 4px 0 rgba(0,0,0,.12); padding: 22px; }
+.cross-card .cc-num { font-size: 30px; font-weight: 900; margin-bottom: 4px; font-family: var(--font-display); }
 .cross-card .cc-num.green { color: var(--green); }
 .cross-card .cc-num.blue { color: var(--blue); }
 .cross-card .cc-num.purple { color: var(--purple); }
-.cross-card .cc-desc { font-size: 13px; color: var(--text-soft); line-height: 1.6; }
+.cross-card .cc-num.accent { color: var(--accent); }
+.cross-card .cc-desc { font-size: 13px; color: var(--text-soft); line-height: 1.6; font-weight: 700; }
 
 /* Conclusion */
-.conclusion { background: linear-gradient(135deg, rgba(245,158,11,0.08), rgba(139,92,246,0.08)); border: 1px solid rgba(245,158,11,0.2); border-radius: var(--radius); padding: 36px; margin-top: 16px; }
-.conclusion h3 { font-size: 22px; font-weight: 700; margin-bottom: 16px; }
+.conclusion { background: #0f0f0f; border: 3px solid var(--accent); border-radius: var(--radius); box-shadow: 8px 8px 0 rgba(0,0,0,.2); padding: 36px; margin-top: 16px; color: #f6f5ec; }
+.conclusion h3 { font-size: 22px; font-weight: 900; margin-bottom: 16px; font-family: var(--font-display); text-transform: uppercase; letter-spacing: .02em; color: #f6f5ec; }
 .conclusion ul { list-style: none; }
-.conclusion ul li { padding: 8px 0; font-size: 14px; color: var(--text-soft); }
-.conclusion ul li::before { content: '✦ '; color: var(--accent); }
+.conclusion ul li { padding: 8px 0; font-size: 14px; color: #d8d6c8; font-weight: 600; }
+.conclusion ul li strong { color: #f6f5ec; }
+.conclusion ul li::before { content: '> '; color: var(--accent); font-weight: 900; }
+.conclusion p { color: #f6f5ec; }
+.conclusion p span { color: var(--accent); }
 
 /* Footer */
-.footer { text-align: center; padding: 48px 28px; border-top: 1px solid var(--border); }
-.footer p { font-size: 12px; color: var(--text-muted); }
+.footer { text-align: center; padding: 28px; border-top: 3px solid var(--border); background: #e6e4d6; }
+.footer p { font-size: 12px; color: var(--text-muted); font-weight: 800; letter-spacing:.04em; text-transform: uppercase; }
 </style>
 </head>
 <body>
+
+<!-- Toolbar -->
+<div class="toolbar">
+    <div class="toolbar-inner">
+        <h1>AiKen <span>洞察报告</span></h1>
+        <div class="toolbar-right">
+            <span class="meta">89 份问卷 · 2026</span>
+            <a href="index.html" class="btn-back">← 返回首页</a>
+        </div>
+    </div>
+</div>
 
 <!-- Hero -->
 <div class="hero">
@@ -103,7 +132,7 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); line
     <h1>当拍照<span>少了点感觉</span></h1>
     <p class="subtitle">89 份真实用户问卷揭示：市场对一台"反效率"相机存在真实渴望</p>
     <p class="meta">2026 年 · 89 份有效问卷 · 样本覆盖 18-45+ 岁 · 男性 60% / 女性 40%</p>
-    <p style="margin-top:16px;"><a href="recruit-analysis.html" style="color:var(--accent);text-decoration:none;font-size:13px;border:1px solid var(--accent);padding:6px 16px;border-radius:6px;transition:all 0.2s;" onmouseover="this.style.background='var(--accent)';this.style.color='#0a0e1a'" onmouseout="this.style.background='transparent';this.style.color='var(--accent)'">📊 查看完整数据分析看板 →</a></p>
+    <p style="margin-top:20px;"><a href="recruit-analysis.html" class="btn-hero">📊 查看完整数据分析看板 →</a></p>
 </div>
 
 <!-- Section 1: The Pain Point -->
@@ -305,7 +334,7 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); line
             <li><strong>信号三：体验与需求对齐。</strong> 46% 用户天然认同胶卷式仪式感，在 18-35 岁中达 51%。AiKen 不需要教育市场——市场已经在等待这样的产品。</li>
             <li><strong>信号四：场景自然匹配。</strong> 旅行、户外、City Walk 等"慢场景"是用户主动选择慢下来的时刻，与 AiKen 的产品节奏无缝衔接。</li>
         </ul>
-        <p style="margin-top:20px;font-size:15px;color:var(--text);font-weight:600;">
+        <p style="margin-top:20px;font-size:15px;color:#f6f5ec;font-weight:600;">
             结论：AiKen 切中的不是一个小众需求，而是一个<span style="color:var(--accent);">已被感知但未被满足</span>的市场空白。用户的"胶卷好奇"、对"手机太普通"的不满、对"仪式感"的向往——这三个情绪的交汇点，就是 AiKen 的位置。
         </p>
     </div>
