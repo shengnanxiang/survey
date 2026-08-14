@@ -90,8 +90,6 @@ function renderOverview() {
 // --- 核心洞察 ---
 function renderInsights() {
   var html = '<div class="section" id="sec-insights">';
-  html += '<div class="section-title">核心洞察</div>';
-  html += '<div class="section-desc">以亲和图（Affinity Diagram）方法对全部访谈记录重新归纳：逐句提取 46 张 sticky notes、聚类为 8 簇主题。每簇均有大量用户原话支撑，颗粒度与证据强度优于原有洞察，故以此为准。用户画像详见「用户画像」页。</div>';
 
   // 方法论简介（保留简单介绍）
   html += '<div class="divider"></div>';
@@ -100,10 +98,9 @@ function renderInsights() {
     html += '<div class="insight-box"><ul><li>' + m + '</li></ul></div>';
   });
 
-  // 核心洞察主体：亲和图 8 簇
+  // 核心洞察主体：亲和图 8 簇（一行 2 个卡片）
   html += '<h3 class="sub-title">核心洞察：亲和图 8 簇</h3>';
-  html += '<p>以下 8 簇即本报告的核心洞察。与原有洞察的最大区别：亲和图从用户原话出发、不预设框架，因此能暴露原有结构中被压缩或合并的独立主题。</p>';
-
+  html += '<div class="aff-grid">';
   AFFINITY.clusters.forEach(function(c) {
     html += '<div class="aff-cluster">';
     html += '<div class="aff-head"><span class="aff-id">' + c.id + '</span><span class="aff-title">' + c.title + '</span><span class="hypo-chip">' + c.hypo + '</span></div>';
@@ -116,22 +113,7 @@ function renderInsights() {
     html += '<div class="aff-takeaway"><strong>归纳</strong> — ' + c.takeaway + '</div>';
     html += '</div>';
   });
-
-  // 为什么以亲和图为准：差异对比
-  html += '<h3 class="sub-title">为什么以亲和图为准：与原核心洞察的差异对比</h3>';
-  html += '<p>逐条对比原有 7 条核心洞察与亲和图 8 簇的对应关系、一致点与差异点，可见亲和图内容更完整、证据更强，因此以亲和图结论为准。</p>';
-  html += '<div class="table-wrap"><table><thead><tr><th>现有核心洞察</th><th>亲和图对应簇</th><th>差异说明</th></tr></thead><tbody>';
-  AFFINITY.comparison.forEach(function(cmp) {
-    html += '<tr><td><strong>' + cmp.existing + '</strong></td><td>' + cmp.affinity + '</td><td>' + cmp.diff + '</td></tr>';
-  });
-  html += '</tbody></table></div>';
-
-  // 亲和图独有的新发现
-  html += '<h3 class="sub-title">亲和图独有的新发现</h3>';
-  html += '<p>以下 4 条是亲和图分析中暴露、但原有「核心洞察」未单独呈现的发现：</p>';
-  AFFINITY.newFindings.forEach(function(f) {
-    html += '<div class="insight-box"><ul><li>' + f + '</li></ul></div>';
-  });
+  html += '</div>';
 
   // 功能优先级矩阵
   html += '<h3 class="sub-title">功能优先级矩阵</h3>';

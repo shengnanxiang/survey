@@ -213,7 +213,11 @@ h3.sub-title::after{content:'';display:block;width:48px;height:4px;background:va
 .hypo-chip{font-size:12px;padding:4px 12px;border-radius:999px;background:var(--primary-container);color:var(--on-primary-container);font-weight:500}
 
 /* ---------- 亲和图 ---------- */
-.aff-cluster{background:var(--surface);border-radius:16px;padding:20px 24px;margin-bottom:16px;box-shadow:var(--sh-1)}
+.aff-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;align-items:stretch}
+@media(max-width:900px){.aff-grid{grid-template-columns:1fr}}
+.aff-cluster{background:var(--surface);border-radius:16px;padding:20px 24px;margin-bottom:16px;box-shadow:var(--sh-1);display:flex;flex-direction:column;height:100%}
+.aff-grid .aff-cluster{margin-bottom:0}
+.aff-cluster .aff-takeaway{margin-top:auto}
 .aff-cluster .aff-head{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
 .aff-cluster .aff-id{font-size:13px;padding:4px 12px;border-radius:8px;background:var(--primary);color:#fff;font-weight:600}
 .aff-cluster .aff-title{font-size:17px;font-weight:600;color:var(--on-surface);flex:1;min-width:220px;line-height:1.35}
