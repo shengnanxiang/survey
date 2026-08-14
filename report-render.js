@@ -127,98 +127,6 @@ function renderInsights() {
   return html;
 }
 
-// --- 调研×访谈合并 ---
-function renderMerge() {
-  var html = '<div class="section" id="sec-merge">';
-  html += '<div class="section-title">调研×访谈合并</div>';
-  html += '<div class="section-desc">逐人对比问卷回答与访谈回答，分析一致性、变化方向及触发原因。</div>';
-
-  // 一致性统计
-  html += '<div class="summary-row">';
-  html += '<div class="summary-card"><div class="label">态度一致</div><div class="value">' + CONSISTENCY_STATS.totalSame + '</div><div class="sub">问卷与访谈态度相同</div></div>';
-  html += '<div class="summary-card card-pos"><div class="label">正向转变</div><div class="value">' + CONSISTENCY_STATS.totalUp + '</div><div class="sub">访谈后态度提升</div></div>';
-  html += '<div class="summary-card card-neg"><div class="label">负向转变</div><div class="value">' + CONSISTENCY_STATS.totalDown + '</div><div class="sub">访谈后态度下降</div></div>';
-  html += '</div>';
-
-  html += '<div class="callout"><strong>关键发现</strong> — 5位受访者态度一致，5位在实物体验后态度正向提升，仅2位负向转变。实物体验整体对产品认知有正向作用，尤其是「可重复使用」和「机械手感」两个信息点的传达。</div>';
-
-  // 逐人对比
-  PEOPLE.forEach(function(p) {
-    var attInfo = ATTITUDE_MAP[p.attitude];
-    var changeCls = p.changeType === 'up' ? 'change-up' : (p.changeType === 'down' ? 'change-down' : 'change-same');
-    var changeLabel = p.changeType === 'up' ? '↑ 正向转变' : (p.changeType === 'down' ? '↓ 负向转变' : '→ 无变化');
-    var consCls = p.consistency.includes('一致') && !p.consistency.includes('不一致') ? 'consistency-yes' : (p.consistency.includes('部分') ? 'consistency-partial' : 'consistency-no');
-
-    html += '<div class="merge-person">';
-    html += '<div class="mp-header">';
-    html += '<span class="mp-name">' + p.name + ' <span class="person-tag ' + attInfo.cls + '">' + attInfo.label + '</span></span>';
-    html += '<span><span class="consistency-badge ' + consCls + '">' + p.consistency + '</span> <span class="' + changeCls + '">' + changeLabel + '</span></span>';
-    html += '</div>';
-    html += '<div class="mp-body">';
-
-    // 对比表头
-    html += '<div class="mp-row" style="border-bottom:2px solid var(--border)">';
-    html += '<div></div><div class="mp-col-header">问卷回答</div><div class="mp-col-header">访谈回答</div><div class="mp-col-header">分析</div>';
-    html += '</div>';
-
-    // 概念态度
-    html += '<div class="mp-row">';
-    html += '<div class="mp-row-label">概念态度</div>';
-    html += '<div class="mp-survey">' + p.survey.concept + '</div>';
-    html += '<div class="mp-interview">' + p.interview.attitudeLabel + '</div>';
-    html += '<div class="mp-analysis">' + p.changeDetail + '</div>';
-    html += '</div>';
-
-    // 胶片经验
-    html += '<div class="mp-row">';
-    html += '<div class="mp-row-label">胶片经验</div>';
-    html += '<div class="mp-survey">' + p.survey.filmExp + '</div>';
-    html += '<div class="mp-interview">' + p.interview.devices + '</div>';
-    html += '<div class="mp-analysis">' + (p.survey.filmExp.includes('在用') || p.survey.filmExp.includes('用过') ? '有胶片经验，对机械交互接受度高' : '无胶片经验，需靠实物体验转化') + '</div>';
-    html += '</div>';
-
-    // 拍摄习惯
-    html += '<div class="mp-row">';
-    html += '<div class="mp-row-label">拍摄习惯</div>';
-    html += '<div class="mp-survey">' + p.survey.photoAttitude + '</div>';
-    html += '<div class="mp-interview">' + p.interview.keyFeedback + '</div>';
-    html += '<div class="mp-analysis">滤镜偏好: ' + p.interview.filters + '</div>';
-    html += '</div>';
-
-    // 价格预期
-    html += '<div class="mp-row">';
-    html += '<div class="mp-row-label">价格预期</div>';
-    html += '<div class="mp-survey">问卷未直接询价</div>';
-    html += '<div class="mp-interview">' + p.interview.price + '</div>';
-    html += '<div class="mp-analysis">定位: ' + p.interview.positioning + '</div>';
-    html += '</div>';
-
-    // 触发原因
-    if (p.trigger !== '—') {
-      html += '<div class="mp-row">';
-      html += '<div class="mp-row-label">变化触发</div>';
-      html += '<div class="mp-analysis" style="grid-column:2/5;color:var(--accent)">' + p.trigger + '</div>';
-      html += '</div>';
-    }
-
-    // 访谈金句
-    if (p.quotes && p.quotes.length > 0) {
-      html += '<div class="mp-row">';
-      html += '<div class="mp-row-label">访谈金句</div>';
-      html += '<div class="mp-interview" style="grid-column:2/5">';
-      p.quotes.forEach(function(q) {
-        html += '<div class="quote-block">' + q + '</div>';
-      });
-      html += '</div></div>';
-    }
-
-    html += '</div></div>';
-  });
-
-  html += '</div>';
-  return html;
-}
-
 // --- 访谈详析 (补充内容) ---
 function renderAnalysis() {
   var html = '<div class="section" id="sec-analysis">';
@@ -360,8 +268,6 @@ function renderAttitude() {
   c.limits.forEach(function(t) { html += '<li>' + t + '</li>'; });
   html += '</ul></div>';
 
-  html += '<div class="callout warn"><strong>与既有分析的口径差异</strong> — 本页「调研×访谈」基于 12 位受访者（含徐玲杰、刘旋的部分访谈），本 Tab 按交叉验证报告执行 10 位完整访谈的逐人比较，因此统计不同：<br><br>1. <strong>刘莹</strong>：上一版判为「一致 / 无显著变化」，交叉验证按访谈强度判为「轻度增强」——她认可拉片机械反馈与解压感，仅等待仍是阻力。<br>2. <strong>统计口径</strong>：上一版为 5 上 / 5 同 / 2 下；交叉验证严格等级转换为 5 上 / 4 同 / 1 下，综合访谈强度后为 6 增强 / 2 稳定 / 2 减弱。<br>3. <strong>结论侧重</strong>：交叉验证更强调「转化的是数字化复古拍摄体验，而非胶卷介质本身」，并明确画质、36 张限制、冲扫等待、机械动作价值不足的回落风险。</div>';
-
   html += '</div>';
   return html;
 }
@@ -369,7 +275,7 @@ function renderAttitude() {
 // --- 初始化 ---
 function init() {
   var main = document.getElementById('main-inner');
-  main.innerHTML = renderOverview() + renderInsights() + renderMerge() + renderAttitude() + renderAnalysis();
+  main.innerHTML = renderOverview() + renderInsights() + renderAttitude() + renderAnalysis();
 }
 
 init();

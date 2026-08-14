@@ -39,9 +39,6 @@ var PEOPLE = [
       keyFeedback:"拉片动作有解压感，36张限制接受度高。但等待冲洗让人焦虑，关注App冲洗等待时长设计。",
       price:"300以下=玩具；599=认真考虑。金属材质可提升接受度。", filters:"复式（富士）",
       positioning:"介于玩具与工具之间，偏有趣玩具", extra:"" },
-    consistency:"一致", changeType:"same",
-    changeDetail:"问卷「有点好奇」→访谈「积极」。作为内部人员对产品已有认知，态度一致，无显著变化。",
-    trigger:"—",
     quotes:["拉片这个动作确实有解压的感觉，就是那种咔嚓一下，挺爽的。","等冲洗的时间如果太长，我可能就忘了当时拍的是什么了，这个体验需要设计好。"] },
 
   { name:"孙雨琪", segment:"value", attitude:"neu",
@@ -54,9 +51,6 @@ var PEOPLE = [
       keyFeedback:"喜欢氛围感，有尝试意愿但不强烈。拉片有新鲜感但不确定能否持续。",
       price:"100–200元，明确玩具定位", filters:"柯达金 — 喜欢暖色调氛围",
       positioning:"玩具", extra:"" },
-    consistency:"部分一致", changeType:"up",
-    changeDetail:"问卷「听起来有点麻烦」→访谈「中性偏好奇」。实物体验后觉得拉片有新鲜感，但不确定能否持续。",
-    trigger:"拉片动作的物理反馈带来新鲜感",
     quotes:["我比较喜欢那种有氛围感的照片，就是看起来不是那么清晰但是有感觉的那种。","一两百块的话我会买来玩玩，贵了就算了。"] },
 
   { name:"朱语婷", segment:"ritual", attitude:"pos",
@@ -69,9 +63,6 @@ var PEOPLE = [
       keyFeedback:"非常积极。认为比真实胶卷更好——不会浪费。希望增加编辑功能。拉片有仪式感。",
       price:"塑料版200–300，金属版500–600", filters:"复式（富士）",
       positioning:"有工具属性的玩具——比纯玩具更有价值", extra:"期望功能: App端支持后期编辑（裁剪/调色）" },
-    consistency:"不一致（正向转变）", changeType:"up",
-    changeDetail:"问卷「听起来有点麻烦」→访谈「积极」。体验后发现「比真胶卷好——不会浪费」，态度大幅转变。",
-    trigger:"可重复使用消除了浪费焦虑，拉片仪式感与现有胶卷使用习惯契合",
     quotes:["比真的胶卷好，因为不会浪费。拍坏了也不心疼，但又有那个仪式感。","如果能在App里再编辑一下就好了，比如裁剪啊调色啊，那就更完美了。"] },
 
   { name:"刘伟钢", segment:"value", attitude:"neu",
@@ -84,9 +75,6 @@ var PEOPLE = [
       keyFeedback:"喜欢复古操作感，拉片有机械反馈。36张限制有轻微焦虑但可接受。介于玩具和工具之间。",
       price:"500可接受，1000是上限", filters:"黑白 — 喜欢复古质感",
       positioning:"介于玩具与工具之间", extra:"" },
-    consistency:"一致", changeType:"same",
-    changeDetail:"问卷「有点好奇」→访谈「中性」。喜欢机械感但始终在玩具与工具之间犹豫，态度未变。",
-    trigger:"—",
     quotes:["那种机械的操作感挺好的，现在数码的东西太没有手感了。","五百块还行，一千的话我得想想值不值了。"] },
 
   { name:"张子璟", segment:"ritual", attitude:"neu",
@@ -99,9 +87,6 @@ var PEOPLE = [
       keyFeedback:"拉片是最喜欢的点。36张限制带来拍摄焦虑。希望有指示灯提示剩余张数。可替代拍立得。",
       price:"500元", filters:"交叉冲洗 + 复式（富士）",
       positioning:"可替代拍立得的新型玩具", extra:"改进建议: 增加剩余张数指示灯" },
-    consistency:"不一致（负向转变）", changeType:"down",
-    changeDetail:"问卷「有点好奇」+「很想参加」→访谈「中性」。36张限制引发拍摄焦虑，从「想试」降为「需要看价格和功能再决定」。",
-    trigger:"36张限制带来拍摄焦虑",
     quotes:["拉片是我最喜欢的设计，就是那种物理反馈，跟按屏幕完全不一样。","36张的话我会焦虑，怕拍浪费了。最好有个指示灯告诉我还剩多少。"] },
 
   { name:"张震", segment:"ritual", attitude:"pos",
@@ -114,9 +99,6 @@ var PEOPLE = [
       keyFeedback:"非常积极。喜欢机械手感和社交分享属性。拉片有仪式感。对产品充满热情。",
       price:"塑料版399，金属版499", filters:"黑白 + 交叉冲洗",
       positioning:"有社交属性的创意工具", extra:"" },
-    consistency:"不一致（正向转变）", changeType:"up",
-    changeDetail:"问卷「听起来有点麻烦」→访谈「积极」。机械手感体验后热情爆发，从「感兴趣」升级为「想买+想推荐给朋友」。",
-    trigger:"机械手感的物理体验 + 社交分享属性",
     quotes:["这个机械的手感太好了，你摸到它就想拍，这就是仪式感。","跟朋友一起拍然后等冲洗出来，这个过程本身就很有意思，比直接发手机照片强多了。"] },
 
   { name:"徐玲杰", segment:"pragmatic", attitude:"neg",
@@ -129,9 +111,6 @@ var PEOPLE = [
       keyFeedback:"非常消极。拉片麻烦，吃惯细粮了。99元也不买。但对直出人像（港风）有兴趣。",
       price:"拒绝购买（99元也不买）", filters:"对港风人像直出有兴趣",
       positioning:"无价值的麻烦制造者", extra:"" },
-    consistency:"一致", changeType:"same",
-    changeDetail:"问卷「完全不感兴趣」→访谈「消极」。态度一致，实物体验后更加确认「太麻烦」。",
-    trigger:"—",
     quotes:["太麻烦了，我已经吃惯细粮了，你让我回去吃粗粮，我不愿意。","99块我也不买，因为我用不上。但如果能直出那种港风人像，我倒是有兴趣。"] },
 
   { name:"王雅岚", segment:"value", attitude:"neu",
@@ -144,9 +123,6 @@ var PEOPLE = [
       keyFeedback:"态度谨慎。不断与数码对比，担心画质。拉片有新鲜感但不确定必要性。兴趣一般。",
       price:"300冲动消费，500需要研究", filters:"复式（富士）",
       positioning:"需要更多理由才能购买的可选玩具", extra:"" },
-    consistency:"部分一致", changeType:"up",
-    changeDetail:"问卷「听起来有点麻烦」→访谈「中性」。拉片有新鲜感但与数码对比后产生疑虑。",
-    trigger:"拉片新鲜感 vs 画质对比疑虑",
     quotes:["我会拿它跟手机比，如果画质还不如手机那我为什么要用这个呢?","三百块的话可能冲动就买了，五百的话我得好好研究一下。"] },
 
   { name:"刘嘉彦", segment:"value", attitude:"neg",
@@ -159,9 +135,6 @@ var PEOPLE = [
       keyFeedback:"不被吸引——不能带来不一样的体验。拉片只是开合。300封顶。玩具。",
       price:"300封顶", filters:"复式（富士）",
       positioning:"玩具", extra:"" },
-    consistency:"不一致（负向转变）", changeType:"down",
-    changeDetail:"问卷「有点好奇」→访谈「消极」。体验后认为「不能带来不一样的体验」，从中性好奇转为明确不感兴趣。",
-    trigger:"预期落差——拉片只是「开一下关一下」，无差异化体验",
     quotes:["它不能够给我带来什么不一样的体验，拉片也就是开一下关一下。","三百块顶天了，再贵我就不买了。"] },
 
   { name:"韩志群", segment:"pragmatic", attitude:"neg",
@@ -174,9 +147,6 @@ var PEOPLE = [
       keyFeedback:"对拉片困惑——没有实际作用，有点傻。100封顶。给小孩玩的玩具。兴趣极低。",
       price:"100封顶", filters:"黑白",
       positioning:"给小孩玩的玩具", extra:"" },
-    consistency:"一致", changeType:"same",
-    changeDetail:"问卷「听起来有点麻烦」→访谈「消极」。对拉片完全无法理解——「没有实际作用，有点傻」。",
-    trigger:"—",
     quotes:["拉片这个动作没有实际作用啊，就是多了一个步骤，有点傻。","一百块的话可以给小孩玩玩，贵了就没意思了。"] },
 
   { name:"刘旋", segment:"ritual", attitude:"pos",
@@ -189,9 +159,6 @@ var PEOPLE = [
       keyFeedback:"喜欢复式，不喜欢黑白。拉片可有可无。即时扫描很吸引。想要社交媒体模板。",
       price:"1000以内，499可以", filters:"复式 + 原图",
       positioning:"有社交属性的趣味设备", extra:"期望: 社交媒体模板/闪光灯" },
-    consistency:"一致", changeType:"same",
-    changeDetail:"问卷「有点好奇」→访谈「积极」。即时扫描功能维持了兴趣，态度一致。",
-    trigger:"—",
     quotes:["即时扫描那个功能很吸引我，拍完马上能看到，这个好。","拉片对我来说可有可无，但整体体验我觉得挺有意思的。"] },
 
   { name:"冯洁", segment:"ritual", attitude:"pos",
@@ -204,9 +171,6 @@ var PEOPLE = [
       keyFeedback:"非常积极——挺期待的。拉片=仪式感。得知可重复使用后价格接受度上升。想要闪光灯。",
       price:"初始150–200，了解可重复使用后499可接受", filters:"复式 + 原图",
       positioning:"有仪式感的趣味设备", extra:"期望: 闪光灯" },
-    consistency:"一致", changeType:"up",
-    changeDetail:"问卷「很有意思想试试」→访谈「积极（加深）」。得知可重复使用后价格接受度从200提升至499。",
-    trigger:"可重复使用消除了成本焦虑 + 拉片仪式感契合现有胶卷使用习惯",
     quotes:["挺期待的，就是那种你拿起来就想拍的感觉，有仪式感。","一开始觉得一两百，后来知道可以重复用，那四五百也行，毕竟不是一次性的。"] }
 ];
 
@@ -290,16 +254,6 @@ var ATTITUDE_DIST = {
   pos: 5,  // 刘莹、朱语婷、张震、刘旋、冯洁
   neu: 4,  // 孙雨琪、刘伟钢、张子璟、王雅岚
   neg: 3   // 徐玲杰、刘嘉彦、韩志群
-};
-
-// --- 问卷vs访谈一致性统计 ---
-var CONSISTENCY_STATS = {
-  consistent: 5,      // 刘莹、刘伟钢、徐玲杰、韩志群、刘旋
-  positiveChange: 5,  // 孙雨琪、朱语婷、张震、冯洁、王雅岚 (up)
-  negativeChange: 2,  // 张子璟、刘嘉彦 (down)
-  totalUp: 5,
-  totalSame: 5,
-  totalDown: 2
 };
 
 // --- 态度变化交叉验证（T0 倾向性问卷 × T1 实物体验访谈） ---
