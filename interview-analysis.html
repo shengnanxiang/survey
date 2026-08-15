@@ -112,6 +112,24 @@ td{padding:12px 16px;border-bottom:1px solid var(--outline-variant);color:var(--
 tr:last-child td{border-bottom:0}
 tr:hover td{background:var(--surface-container)}
 .att-up{color:var(--success);font-weight:600}.att-down{color:var(--danger);font-weight:600}.att-same{color:var(--muted);font-weight:600}
+/* 交叉验证表：用户/变化列更宽不折行，T0/T1/解释三列等宽 */
+.att-cmp-table{table-layout:fixed}
+.att-cmp-table .col-user{width:13%}
+.att-cmp-table .col-t0,.att-cmp-table .col-t1{width:24%}
+.att-cmp-table .col-change{width:13%}
+.att-cmp-table .col-explain{width:26%}
+.att-cmp-table th:nth-child(1),.att-cmp-table td:nth-child(1){white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.att-cmp-table th:nth-child(4),.att-cmp-table td:nth-child(4){white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ---------- 筛选面板（访谈详析） ---------- */
+.filter-panel{display:flex;gap:28px;flex-wrap:wrap;background:var(--surface);border-radius:16px;padding:16px 20px;margin-bottom:12px;box-shadow:var(--sh-1)}
+.filter-group{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.filter-label{font-size:13px;font-weight:600;color:var(--on-surface);margin-right:2px}
+.filter-check{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--outline-variant);border-radius:999px;font-size:13px;color:var(--on-surface-variant);cursor:pointer;transition:background .15s,border-color .15s;user-select:none}
+.filter-check:hover{border-color:var(--primary)}
+.filter-check:has(input:checked){background:var(--primary-container);color:var(--on-primary-container);border-color:var(--primary);font-weight:500}
+.filter-check input{accent-color:var(--primary);margin:0;cursor:pointer}
+.filter-hint{font-size:12px;color:var(--muted);margin:0 0 12px}
 
 /* ---------- 图表 ---------- */
 .chart-box{background:var(--surface);border-radius:16px;padding:22px 26px;margin-bottom:20px;box-shadow:var(--sh-1)}
@@ -174,6 +192,23 @@ h3.sub-title::after{content:'';display:block;width:48px;height:4px;background:va
 .priority-P1{background:var(--warn-container);color:var(--on-warn-container)}
 .priority-P2{background:var(--primary-container);color:var(--on-primary-container)}
 .priority-P3{background:var(--surface-container);color:var(--on-surface-variant)}
+
+/* ---------- 必需性测试 ---------- */
+.nec-table th:nth-child(2),.nec-table th:nth-child(3),.nec-table th:nth-child(4),.nec-table th:nth-child(5){text-align:center}
+.nec-table td:nth-child(2),.nec-table td:nth-child(3),.nec-table td:nth-child(4),.nec-table td:nth-child(5),.nec-table td:nth-child(6),.nec-table td:nth-child(7),.nec-table td:nth-child(8){text-align:center;white-space:nowrap}
+.nec-table td:first-child{white-space:nowrap}
+.nec-num{display:inline-block;min-width:26px;text-align:center;padding:2px 8px;border-radius:999px;font-size:13px;font-weight:600}
+.nec-num.must{background:var(--danger-container);color:var(--on-danger-container)}
+.nec-num.like{background:var(--success-container);color:var(--on-success-container)}
+.nec-num.neutral{background:var(--surface-container);color:var(--on-surface-variant)}
+.nec-num.refuse{background:var(--danger);color:#fff}
+.nec-legend{display:flex;gap:20px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin:-8px 0 16px;padding:0 8px}
+.nec-legend span{display:inline-flex;align-items:center;gap:6px}
+.nec-dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.nec-dot.must{background:var(--danger-container);border:1px solid var(--danger)}
+.nec-dot.like{background:var(--success-container);border:1px solid var(--success)}
+.nec-dot.neutral{background:var(--surface-container);border:1px solid var(--outline-variant)}
+.nec-dot.refuse{background:var(--danger)}
 
 /* ---------- 体验架构 ---------- */
 .arch-box{background:var(--surface);border-radius:16px;padding:24px;margin-bottom:20px;box-shadow:var(--sh-1)}

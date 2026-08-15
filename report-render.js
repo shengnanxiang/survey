@@ -127,6 +127,37 @@ function renderInsights() {
   });
   html += '</tbody></table></div>';
 
+  // 功能必需性测试（10 份纸质问卷，与访谈矩阵互为补充）
+  html += '<h3 class="sub-title">功能必需性测试</h3>';
+  html += '<p>独立于访谈的量化环节：<strong>' + NECESSITY_TEST.meta + '</strong> 用户对 7 项功能做四选一评价（没它不买 / 很吸引我 / 可有可无 / 劝退）。它与上方访谈矩阵口径不同：访谈矩阵的 necessity 是「提及率」（几位受访者聊到了该功能），下表则是「必需率 / 正向率 / 劝退率」（多少人把它当作购买门槛）。两者应结合阅读，以下表为准校正优先级。</p>';
+  html += '<div class="table-wrap"><table class="nec-table">';
+  html += '<thead><tr><th>功能</th><th>没它不买</th><th>很吸引我</th><th>可有可无</th><th>劝退</th><th>必需率</th><th>正向率</th><th>劝退率</th><th>层级</th></tr></thead><tbody>';
+  NECESSITY_TEST.rows.forEach(function(r) {
+    var lvlCls = r.level === '高风险' ? 'priority-P0' : 'priority-' + r.level;
+    html += '<tr><td><strong>' + r.name + '</strong></td>';
+    html += '<td><span class="nec-num must">' + r.must + '</span></td>';
+    html += '<td><span class="nec-num like">' + r.like + '</span></td>';
+    html += '<td><span class="nec-num neutral">' + r.neutral + '</span></td>';
+    html += '<td><span class="nec-num refuse">' + r.refuse + '</span></td>';
+    html += '<td>' + r.mustRate + '</td><td>' + r.posRate + '</td><td>' + r.riskRate + '</td>';
+    html += '<td><span class="priority-badge ' + lvlCls + '">' + r.level + '</span></td></tr>';
+  });
+  html += '</tbody></table></div>';
+  html += '<div class="nec-legend"><span><i class="nec-dot must"></i>没它不买 = 严格必需</span><span><i class="nec-dot like"></i>很吸引我 = 明显加分</span><span><i class="nec-dot neutral"></i>可有可无 = 低优先级</span><span><i class="nec-dot refuse"></i>劝退 = 负向风险</span></div>';
+
+  html += '<div class="insight-box"><h3>关键发现</h3><ul>';
+  NECESSITY_TEST.insights.forEach(function(t) { html += '<li>' + t + '</li>'; });
+  html += '</ul></div>';
+
+  html += '<div class="callout"><strong>产品定位启示</strong> — ' + NECESSITY_TEST.positioning + '</div>';
+
+  // 两套口径的矛盾消解
+  html += '<div class="callout warn"><strong>与访谈矩阵的口径差异（以下表为准）</strong><br>';
+  html += '① <strong>即时冲扫</strong>：访谈矩阵仅 P1（60% 提及率），必需性测试显示 50% 必需率、100% 正向——应升为 <span class="priority-badge priority-P0">P0</span> 体验底线。<br>';
+  html += '② <strong>36 张限制</strong>：访谈矩阵列 P1（100% 提及率），但必需性测试 60% 可有可无——它不是卖点而是约束，应设计为可开关的「胶卷模式」玩法。<br>';
+  html += '③ <strong>社媒拼贴</strong>：访谈矩阵仅 P2（10% 提及率），必需性测试 80%「很吸引我」——传播价值被严重低估，应升为 <span class="priority-badge priority-P1">P1</span>。<br>';
+  html += '④ <strong>经典冲扫（等 3-24 小时）</strong>：0% 正向、50% 劝退——不可强制，若保留只能作为自愿开启的「慢冲洗」挑战模式。</div>';
+
   // 体验架构（当前产品体验架构）
   html += '<h3 class="sub-title">体验架构</h3>';
   html += '<div class="arch-box">';
@@ -154,13 +185,39 @@ function renderInsights() {
 function renderAnalysis() {
   var html = '<div class="section" id="sec-analysis">';
   html += '<div class="section-title">访谈详析</div>';
-  html += '<div class="section-desc">10位受访者完整访谈记录摘要（徐玲杰、刘旋 2 份「部分」访谈未纳入），作为补充参考材料。</div>';
+  html += '<div class="section-desc">10位受访者完整访谈记录摘要（徐玲杰、刘旋 2 份「部分」访谈未纳入），作为补充参考材料。支持按态度与问卷分组组合筛选。</div>';
+
+  // 筛选器：态度 × 分组，均支持多选与「所有」
+  var attOpts = ['pos', 'neu', 'neg'];
+  var groupSet = {};
+  PEOPLE.forEach(function(p) {
+    (p.survey.groups || []).forEach(function(g) { groupSet[g] = 1; });
+  });
+  var groupOpts = Object.keys(groupSet).sort();
+
+  html += '<div class="filter-panel">';
+  html += '<div class="filter-group" id="att-filter"><span class="filter-label">态度</span>';
+  html += '<label class="filter-check"><input type="checkbox" class="all" value="all" checked onchange="filterAnalysis(this)">所有</label>';
+  attOpts.forEach(function(a) {
+    html += '<label class="filter-check"><input type="checkbox" value="' + a + '" onchange="filterAnalysis(this)">' + ATTITUDE_MAP[a].label + '</label>';
+  });
+  html += '</div>';
+  html += '<div class="filter-group" id="group-filter"><span class="filter-label">分组</span>';
+  html += '<label class="filter-check"><input type="checkbox" class="all" value="all" checked onchange="filterAnalysis(this)">所有</label>';
+  groupOpts.forEach(function(g) {
+    html += '<label class="filter-check"><input type="checkbox" value="' + g + '" onchange="filterAnalysis(this)">' + g + '</label>';
+  });
+  html += '</div>';
+  html += '</div>';
+  html += '<div class="filter-hint" id="analysis-count">当前显示 ' + PEOPLE.length + ' / ' + PEOPLE.length + ' 位受访者</div>';
+  html += '<div id="analysis-list">';
 
   PEOPLE.forEach(function(p) {
     var attInfo = ATTITUDE_MAP[p.attitude];
     var seg = SEGMENTS.find(function(s) { return s.id === p.segment; });
+    var gAttr = (p.survey.groups || []).join(',');
 
-    html += '<div class="person-card">';
+    html += '<div class="person-card" data-att="' + p.attitude + '" data-groups="' + gAttr + '">';
     html += '<div class="person-header">';
     html += '<span class="person-name">' + p.name + ' <span class="person-tag ' + attInfo.cls + '">' + attInfo.label + '</span></span>';
     html += '<div class="person-meta">';
@@ -203,7 +260,55 @@ function renderAnalysis() {
   });
 
   html += '</div>';
+  html += '</div>';
   return html;
+}
+
+// --- 访谈详析筛选：态度 × 分组（多选，含「所有」） ---
+function filterAnalysis(el) {
+  if (el) {
+    var grp = el.closest('.filter-group');
+    if (el.value === 'all') {
+      if (el.checked) {
+        grp.querySelectorAll('input:not(.all)').forEach(function(c) { c.checked = false; });
+      }
+    } else {
+      if (el.checked) {
+        grp.querySelector('input.all').checked = false;
+      } else {
+        var any = Array.prototype.some.call(grp.querySelectorAll('input:not(.all)'), function(c) { return c.checked; });
+        if (!any) grp.querySelector('input.all').checked = true;
+      }
+    }
+  }
+
+  function selValues(panelId) {
+    var values = [];
+    var any = false;
+    document.querySelectorAll('#' + panelId + ' input:not(.all)').forEach(function(cb) {
+      if (cb.checked) { values.push(cb.value); any = true; }
+    });
+    return any ? values : null; // null 表示不过滤
+  }
+
+  var atts = selValues('att-filter');
+  var grps = selValues('group-filter');
+  var cards = document.querySelectorAll('#analysis-list .person-card');
+  var visible = 0;
+
+  cards.forEach(function(card) {
+    var show = true;
+    if (atts) show = show && atts.indexOf(card.getAttribute('data-att')) !== -1;
+    if (grps) {
+      var gs = (card.getAttribute('data-groups') || '').split(',').filter(Boolean);
+      show = show && gs.some(function(g) { return grps.indexOf(g) !== -1; });
+    }
+    card.style.display = show ? '' : 'none';
+    if (show) visible++;
+  });
+
+  var countEl = document.getElementById('analysis-count');
+  if (countEl) countEl.textContent = '当前显示 ' + visible + ' / ' + cards.length + ' 位受访者';
 }
 
 // --- 态度变化（T0 问卷 × T1 访谈交叉验证） ---
@@ -241,7 +346,7 @@ function renderAttitude() {
 
   // 逐人交叉验证
   html += '<h3 class="sub-title">逐人交叉验证</h3>';
-  html += '<div class="table-wrap"><table><thead><tr><th>用户</th><th>T0 前期问卷</th><th>T1 体验访谈</th><th>变化</th><th>交叉验证解释</th></tr></thead><tbody>';
+  html += '<div class="table-wrap"><table class="att-cmp-table"><colgroup><col class="col-user"><col class="col-t0"><col class="col-t1"><col class="col-change"><col class="col-explain"></colgroup><thead><tr><th>用户</th><th>T0 前期问卷</th><th>T1 体验访谈</th><th>变化</th><th>交叉验证解释</th></tr></thead><tbody>';
   c.people.forEach(function(p) {
     var cls = p.level === 'up' ? 'att-up' : (p.level === 'down' ? 'att-down' : 'att-same');
     html += '<tr><td><strong>' + p.name + '</strong></td><td>' + p.t0 + '</td><td>' + p.t1 + '</td><td class="' + cls + '">' + p.change + '</td><td>' + p.explain + '</td></tr>';
