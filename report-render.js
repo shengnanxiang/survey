@@ -204,8 +204,10 @@ function renderAnalysis() {
   html += '</div>';
   html += '<div class="filter-group" id="group-filter"><span class="filter-label">分组</span>';
   html += '<label class="filter-check"><input type="checkbox" class="all" value="all" checked onchange="filterAnalysis(this)">所有</label>';
+  var GROUP_NAME = { G1: '胶片好奇者', G2: '胶卷/拍立得经历者', G3: '潮玩数码尝鲜者' };
   groupOpts.forEach(function(g) {
-    html += '<label class="filter-check"><input type="checkbox" value="' + g + '" onchange="filterAnalysis(this)">' + g + '</label>';
+    var gname = GROUP_NAME[g] ? ' <em class="group-name">' + GROUP_NAME[g] + '</em>' : '';
+    html += '<label class="filter-check"><input type="checkbox" value="' + g + '" onchange="filterAnalysis(this)">' + g + gname + '</label>';
   });
   html += '</div>';
   html += '</div>';
@@ -223,7 +225,7 @@ function renderAnalysis() {
     html += '<div class="person-meta">';
     if (seg) html += '<span class="meta-chip">' + seg.name + '</span>';
     if (p.survey.groups && p.survey.groups.length > 0) {
-      p.survey.groups.forEach(function(g) { html += '<span class="meta-chip">' + g + '</span>'; });
+      p.survey.groups.forEach(function(g) { html += '<span class="meta-chip" title="' + (GROUP_NAME[g] || g) + '">' + g + '</span>'; });
     }
     html += '<span class="meta-chip">' + p.survey.age + '</span>';
     html += '<span class="meta-chip">' + p.survey.gender + '</span>';
