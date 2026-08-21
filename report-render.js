@@ -175,7 +175,7 @@ function renderInsights() {
 
   // 定价 499 元
   html += '<h3 class="sub-title">定价：499 元</h3>';
-  html += '<div class="callout"><strong>499 元是既定决策，不做塑料版 / 金属版分档</strong><br>金属版因成本与信号问题不成立。499 元落在积极用户「认真考虑」区间——张震（499）、冯洁（可重复使用后 499 可接受）、刘莹（599 认真考虑），不是需要被验证的价格，而是需要用体验去兑现的价格。</div>';
+  html += '<div class="callout"><strong>499 元是既定决策，不做塑料版 / 金属版分档</strong><br>金属版因成本与信号问题不成立。499 元落在积极用户「认真考虑」区间——受访者F（499）、受访者J（可重复使用后 499 可接受）、受访者A（599 认真考虑），不是需要被验证的价格，而是需要用体验去兑现的价格。</div>';
   html += '<div class="callout"><strong>撑住 499 元的关键：外观设计与 CMF 投入</strong><br>塑料材质容易带来廉价感，会直接削弱机械手感带来的价值感知。外观设计、表面处理、按键手感、机身配重等 CMF 细节需要足够投入，让「摸到它就想拍」的物理质感与滤镜直出、冲扫等待的仪式感形成一致的价值感。</div>';
   html += '</div>';
   return html;
@@ -185,7 +185,7 @@ function renderInsights() {
 function renderAnalysis() {
   var html = '<div class="section" id="sec-analysis">';
   html += '<div class="section-title">访谈详析</div>';
-  html += '<div class="section-desc">10位受访者完整访谈记录摘要（徐玲杰、刘旋 2 份「部分」访谈未纳入），作为补充参考材料。支持按态度与问卷分组组合筛选。</div>';
+  html += '<div class="section-desc">10位受访者完整访谈记录摘要（受访者L、受访者K 2 份「部分」访谈未纳入），作为补充参考材料。支持按态度与问卷分组组合筛选。</div>';
 
   // 筛选器：态度 × 分组，均支持多选与「所有」
   var attOpts = ['pos', 'neu', 'neg'];
@@ -334,7 +334,7 @@ function renderAttitude() {
   html += '<div class="summary-card card-neg"><div class="label">体验后态度减弱</div><div class="value">' + c.summary.down + '</div><div class="sub">' + Math.round(c.summary.down / total * 100) + '% 的受访者</div></div>';
   html += '</div>';
 
-  html += '<div class="callout warn"><strong>严格等级转换对照</strong> — 若只把 T0 的「想试试 / 好奇 / 麻烦 / 不感兴趣」与 T1 的「积极 / 中性 / 消极」对应，则为 ' + c.strict.up + ' 人上升、' + c.strict.stable + ' 人不变、' + c.strict.down + ' 人下降。综合访谈强度后：冯洁属于积极加深，张子璟虽仍为中性但确定性下降，因此得到 ' + c.summary.up + ' / ' + c.summary.stable + ' / ' + c.summary.down + '。</div>';
+  html += '<div class="callout warn"><strong>严格等级转换对照</strong> — 若只把 T0 的「想试试 / 好奇 / 麻烦 / 不感兴趣」与 T1 的「积极 / 中性 / 消极」对应，则为 ' + c.strict.up + ' 人上升、' + c.strict.stable + ' 人不变、' + c.strict.down + ' 人下降。综合访谈强度后：受访者J属于积极加深，受访者E虽仍为中性但确定性下降，因此得到 ' + c.summary.up + ' / ' + c.summary.stable + ' / ' + c.summary.down + '。</div>';
 
   // T0 与 T1 结构变化
   html += '<h3 class="sub-title">T0 与 T1 的结构变化 (N=10，10 位完整访谈)</h3>';
